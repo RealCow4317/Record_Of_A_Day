@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.blog.dao.DiaryDAO">
+
+    <resultMap id="diaryResultMap" type="com.example.blog.dto.DiaryDTO">
+        <id property="id" column="id"/>
+        <result property="memberNo" column="member_no"/>
+        <result property="diaryDate" column="diary_date"/>
+        <result property="content" column="content"/>
+        <result property="imagePath" column="image_path"/>
+    </resultMap>
+
+    <insert id="save" parameterType="com.example.blog.dto.DiaryDTO">
+        INSERT INTO diary (member_no, diary_date, content, image_path)
+        VALUES (#{memberNo}, #{diaryDate}, #{content}, #{imagePath})
+    </insert>
+
+    <select id="findByMemberNoAndDateRange" resultMap="diaryResultMap">
+        SELECT id, member_no, diary_date, content, image_path
+        FROM diary
+        WHERE member_no = #{memberNo}
+          AND diary_date BETWEEN #{startDate} AND #{endDate}
+    </select>
+
+    <select id="findByMemberNoAndDiaryDate" resultMap="diaryResultMap">
+        SELECT id, member_no, diary_date, content, image_path
+        FROM diary
+        WHERE member_no = #{memberNo} AND diary_date = #{diaryDate}
+    </select>
+
+    <update id="update" parameterType="com.example.blog.dto.DiaryDTO">
+        UPDATE diary
+        SET content = #{content},
+            image_path = #{imagePath}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

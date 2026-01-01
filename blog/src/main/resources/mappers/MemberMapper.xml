@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.blog.dao.MemberDAO">
+
+    <resultMap id="memberResultMap" type="com.example.blog.dto.MemberDTO">
+        <id property="memberNo" column="member_no"/>
+        <result property="id" column="id"/>
+        <result property="password" column="password"/>
+        <result property="name" column="name"/>
+        <result property="email" column="email"/>
+        <result property="admin" column="is_admin"/>
+    </resultMap>
+
+    <insert id="insertMember" parameterType="com.example.blog.dto.MemberDTO">
+        INSERT INTO member (id, password, name, email, is_admin)
+        VALUES (#{id}, #{password}, #{name}, #{email}, #{admin})
+    </insert>
+
+
+    <select id="getMemberById" parameterType="string" resultMap="memberResultMap">
+        SELECT * FROM member
+        WHERE LOWER(TRIM(id)) = LOWER(TRIM(#{id}))
+    </select>
+
+    <select id="getAllMembers" resultMap="memberResultMap">
+        SELECT * FROM member ORDER BY member_no DESC
+    </select>
+
+    <delete id="deleteMember" parameterType="int">
+        DELETE FROM member WHERE member_no = #{memberNo}
+    </delete>
+
+    <update id="updateMember" parameterType="com.example.blog.dto.MemberDTO">
+        UPDATE member
+        SET name = #{name},
+            email = #{email},
+            is_admin = #{admin},
+            password = #{password}
+        WHERE id = #{id}
+    </update>
+
+    <select id="searchMembers" resultMap="memberResultMap">
+        SELECT * FROM member
+        WHERE id LIKE CONCAT('%', #{keyword}, '%')
+           OR name LIKE CONCAT('%', #{keyword}, '%')
+           OR email LIKE CONCAT('%', #{keyword}, '%')
+    </select>
+
+    <select id="getMemberByNo" parameterType="int" resultMap="memberResultMap">
+        SELECT * FROM member WHERE member_no = #{memberNo}
+    </select>
+
+    <select id="getMemberByEmail" parameterType="string" resultMap="memberResultMap">
+        SELECT * FROM member
+        WHERE LOWER(TRIM(email)) = LOWER(TRIM(#{email}))
+    </select>
+
+</mapper>

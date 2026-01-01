@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.blog.dao.BoardDAO">
+
+    <resultMap id="boardResultMap" type="com.example.blog.dto.BoardDTO">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="writer" column="writer"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="categoryName" column="categoryName"/>
+        <result property="pinned" column="pinned"/>
+        <result property="thumbnail" column="thumbnail"/>
+        <result property="views" column="views"/>
+    </resultMap>
+
+    <!-- 조회수 증가 -->
+    <update id="incrementViews" parameterType="int">
+        UPDATE board
+        SET views = views + 1
+        WHERE id = #{id}
+    </update>
+
+    <select id="getAllBoards" resultMap="boardResultMap">
+        SELECT b.id, b.title, b.content, b.writer, b.created_at,
+               b.category_id, c.name AS categoryName, b.pinned, b.thumbnail, b.views
+        FROM board b
+                 LEFT JOIN category c ON b.category_id = c.id
+        ORDER BY b.created_at DESC
+    </select>
+
+    <select id="getBoardById" parameterType="int" resultMap="boardResultMap">
+        SELECT b.id, b.title, b.content, b.writer, b.created_at,
+               b.category_id, c.name AS categoryName, b.pinned, b.thumbnail, b.views
+        FROM board b
+                 LEFT JOIN category c ON b.category_id = c.id
+        WHERE b.id = #{id}
+    </select>
+
+    <insert id="insertBoard" parameterType="com.example.blog.dto.BoardDTO">
+        INSERT INTO board (title, content, writer, category_id, pinned, thumbnail)
+        VALUES (#{title}, #{content}, #{writer}, #{categoryId}, #{pinned}, #{thumbnail})
+    </insert>
+
+    <update id="updateBoard" parameterType="com.example.blog.dto.BoardDTO">
+        UPDATE board
+        SET title = #{title},
+            content = #{content},
+            category_id = #{categoryId},
+            pinned = #{pinned},
+            thumbnail = #{thumbnail}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteBoard" parameterType="int">
+        DELETE FROM board WHERE id = #{id}
+    </delete>
+
+    <select id="getRecentBoards" resultMap="boardResultMap">
+        SELECT b.id, b.title, b.content, b.writer, b.created_at,
+               b.category_id, c.name AS categoryName, b.pinned, b.thumbnail, b.views
+        FROM board b
+                 LEFT JOIN category c ON b.category_id = c.id
+        ORDER BY b.created_at DESC
+            LIMIT 4
+    </select>
+
+    <select id="countBoards" resultType="int">
+        SELECT COUNT(*) FROM board
+    </select>
+
+    <select id="getBoardsByPage" resultMap="boardResultMap">
+        SELECT b.id, b.title, b.content, b.writer, b.created_at,
+               b.category_id, c.name AS categoryName, b.pinned, b.thumbnail, b.views
+        FROM board b
+                 LEFT JOIN category c ON b.category_id = c.id
+        ORDER BY b.pinned DESC, b.created_at DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="searchBoards" resultMap="boardResultMap">
+        SELECT b.id, b.title, b.content, b.writer, b.created_at,
+               b.category_id, c.name AS categoryName, b.pinned, b.thumbnail, b.views
+        FROM board b
+                 LEFT JOIN category c ON b.category_id = c.id
+        WHERE b.title LIKE CONCAT('%', #{keyword}, '%')
+           OR b.content LIKE CONCAT('%', #{keyword}, '%')
+           OR b.writer LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY b.pinned DESC, b.created_at DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countSearchBoards" resultType="int">
+        SELECT COUNT(*)
+        FROM board
+        WHERE title LIKE CONCAT('%', #{keyword}, '%')
+           OR content LIKE CONCAT('%', #{keyword}, '%')
+           OR writer LIKE CONCAT('%', #{keyword}, '%')
+    </select>
+
+    <select id="searchBoardsByCategoryAndKeyword" resultMap="boardResultMap">
+        SELECT b.id, b.title, b.content, b.writer, b.created_at,
+               b.category_id, c.name AS categoryName, b.pinned, b.thumbnail, b.views
+        FROM board b
+                 LEFT JOIN category c ON b.category_id = c.id
+        WHERE b.category_id = #{categoryId}
+          AND (b.title LIKE CONCAT('%', #{keyword}, '%')
+            OR b.content LIKE CONCAT('%', #{keyword}, '%')
+            OR b.writer LIKE CONCAT('%', #{keyword}, '%'))
+        ORDER BY b.pinned DESC, b.created_at DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countBoardsByCategoryAndKeyword" resultType="int">
+        SELECT COUNT(*)
+        FROM board
+        WHERE category_id = #{categoryId}
+          AND (title LIKE CONCAT('%', #{keyword}, '%')
+            OR content LIKE CONCAT('%', #{keyword}, '%')
+            OR writer LIKE CONCAT('%', #{keyword}, '%'))
+    </select>
+
+    <select id="getBoardsByCategory" resultMap="boardResultMap">
+        SELECT b.id, b.title, b.content, b.writer, b.created_at,
+               b.category_id, c.name AS categoryName, b.pinned, b.thumbnail, b.views
+        FROM board b
+                 LEFT JOIN category c ON b.category_id = c.id
+        WHERE b.category_id = #{categoryId}
+        ORDER BY b.pinned DESC, b.created_at DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countBoardsByCategory" resultType="int">
+        SELECT COUNT(*) FROM board WHERE category_id = #{categoryId}
+    </select>
+
+</mapper>

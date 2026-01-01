@@ -1,16 +1,12 @@
-# Compiled class file
+# =================================================================
+# Spring Boot (Maven) Project .gitignore
+# =================================================================
+
+### Java & Spring Boot ###
 *.class
-
-# Log file
 *.log
-
-# BlueJ files
 *.ctxt
-
-# Mobile Tools for Java (J2ME)
 .mtj.tmp/
-
-# Package Files #
 *.jar
 *.war
 *.nar
@@ -18,7 +14,60 @@
 *.zip
 *.tar.gz
 *.rar
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# Spring Boot 빌드/실행 시 생성 파일
+bin/
+build/
+/logs
+*.log
+*.err
+
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# Maven Wrapper
+# wrapper jar는 실행을 위해 필요하므로 보통 포함하지만,
+# 필요에 따라 제외하고 싶다면 아래 주석을 해제하세요.
+# .mvn/wrapper/maven-wrapper.jar
+
+### Intellij ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+.idea_modules/
+
+### 보안 (설정 파일 분리 권장) ###
+# DB 정보나 API 키가 포함된 파일은 제외
+application-local.properties
+application-local.yml
+application-dev.properties
+application-dev.yml
+application-prod.properties
+application-prod.yml
+
+### OS 관련 ###
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+### Eclipse (m2e 사용 시 생성됨) ###
+.project
+.classpath
+.settings/
+.factorypath

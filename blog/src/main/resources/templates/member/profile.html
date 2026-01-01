@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>내 프로필</title>
+</head>
+<body>
+    <div layout:fragment="content" class="container mt-5">
+        <h2 class="mb-4">내 프로필</h2>
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">아이디</div>
+                    <div class="col-sm-9" th:text="${loginUser.id}">user1</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">이름</div>
+                    <div class="col-sm-9" th:text="${loginUser.name}">홍길동</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">이메일</div>
+                    <div class="col-sm-9" th:text="${loginUser.email}">test@example.com</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">회원 권한</div>
+                    <div class="col-sm-9">
+                        <span th:if="${loginUser.admin}" class="badge bg-danger">관리자</span>
+                        <span th:unless="${loginUser.admin}" class="badge bg-primary">일반회원</span>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex gap-2">
+                    <a th:href="@{/member/change-password}" class="btn btn-warning">비밀번호 변경</a>
+                    <a th:href="@{/}" class="btn btn-secondary">메인으로</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

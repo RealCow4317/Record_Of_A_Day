@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>관리자 대시보드</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div th:replace="~{admin/common/adminNav :: adminNav}"></div>
+        
+        <div class="container mt-4">
+            <h2 class="mb-4">👑 관리자 대시보드</h2>
+
+            <!-- 회원 리스트 -->
+            <div class="card p-3 shadow-sm mb-4">
+                <h4 class="mb-3">회원 리스트</h4>
+                <table class="table table-hover table-bordered bg-white">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>번호</th>
+                            <th>아이디</th>
+                            <th>이름</th>
+                            <th>이메일</th>
+                            <th>관리자 여부</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="user, status : ${users}" th:if="${status.index < 5}">
+                            <td th:text="${status.index + 1}">1</td>
+                            <td th:text="${user.id}">id</td>
+                            <td th:text="${user.name}">name</td>
+                            <td th:text="${user.email}">email</td>
+                            <td th:text="${user.admin ? '✔' : '✖'}">✖</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="text-end">
+                    <a th:href="@{/admin/users}" class="btn btn-sm btn-outline-secondary">자세히 보기</a>
+                </div>
+            </div>
+
+            <!-- 게시글 리스트 -->
+            <div class="card p-3 shadow-sm mb-4">
+                <h4 class="mb-3">게시글 리스트</h4>
+                <table class="table table-hover table-bordered bg-white">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>제목</th>
+                            <th>작성자</th>
+                            <th>작성일</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="post, status : ${recentPosts}" th:if="${status.index < 5}">
+                            <td th:text="${post.title}">제목</td>
+                            <td th:text="${post.writer}">작성자</td>
+                            <td th:text="${#dates.format(post.createdAt, 'yyyy-MM-dd')}">2026-01-01</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="text-end">
+                    <a th:href="@{/admin/posts}" class="btn btn-sm btn-outline-secondary">자세히 보기</a>
+                </div>
+            </div>
+
+            <!-- 카테고리 리스트 -->
+            <div class="card p-3 shadow-sm">
+                <h4 class="mb-3">카테고리 리스트</h4>
+                <table class="table table-hover table-bordered bg-white">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>카테고리명</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="cat, status : ${categories}" th:if="${status.index < 5}">
+                            <td th:text="${cat.name}">카테고리명</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="text-end">
+                    <a th:href="@{/admin/categories}" class="btn btn-sm btn-outline-secondary">자세히 보기</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

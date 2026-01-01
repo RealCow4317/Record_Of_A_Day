@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.blog.dao.CommentDAO">
+
+    <resultMap id="commentResultMap" type="com.example.blog.dto.CommentDTO">
+        <id property="id" column="id"/>
+        <result property="boardId" column="board_id"/>
+        <result property="writer" column="writer"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="content" column="content"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <!-- 댓글 추가 -->
+    <insert id="addComment" parameterType="com.example.blog.dto.CommentDTO">
+        INSERT INTO comment (board_id, writer, content
+        <if test="parentId != null and parentId > 0">
+            , parent_id
+        </if>
+        )
+        VALUES (#{boardId}, #{writer}, #{content}
+        <if test="parentId != null and parentId > 0">
+            , #{parentId}
+        </if>
+        )
+    </insert>
+
+    <!-- 댓글 삭제 -->
+    <delete id="deleteComment" parameterType="int">
+        DELETE FROM comment WHERE id = #{id}
+    </delete>
+
+    <!-- 특정 게시글의 모든 댓글 조회 -->
+    <select id="getCommentsByBoardId" parameterType="int" resultMap="commentResultMap">
+        SELECT id, board_id, writer, parent_id, content, created_at
+        FROM comment
+        WHERE board_id = #{boardId}
+        ORDER BY id ASC
+    </select>
+
+    <!-- 댓글 1개 조회 -->
+    <select id="getCommentById" parameterType="int" resultMap="commentResultMap">
+        SELECT id, board_id, writer, parent_id, content, created_at
+        FROM comment
+        WHERE id = #{id}
+    </select>
+
+    <!-- 댓글 수정 -->
+    <update id="updateComment" parameterType="com.example.blog.dto.CommentDTO">
+        UPDATE comment
+        SET content = #{content}
+        WHERE id = #{id}
+    </update>
+
+    <select id="countByBoardId" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM comment WHERE board_id = #{boardId}
+    </select>
+
+</mapper>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+</head>
+<body>
+    <nav th:fragment="header" class="navbar fixed-top navbar-expand-lg border-bottom shadow-sm bg-body">
+        <div class="container-fluid">
+            <!-- Left-aligned items (Hamburger Menu Button and Logo) -->
+            <div class="d-flex align-items-center">
+                <!-- Offcanvas Menu Button -->
+                <button class="btn btn-outline-secondary me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sideMenu" aria-controls="sideMenu">
+                    ☰
+                </button>
+                <!-- Logo -->
+                <a class="navbar-brand" th:href="@{/}">
+                    <img th:src="@{/img/logo.png}" alt="REALCOW Logo" style="height: 36px;">
+                </a>
+            </div>
+
+            <!-- Centered Menu Items -->
+            <ul class="navbar-nav mx-auto d-flex flex-row gap-4">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/board/list}">Board</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/todo/list}">ToDo</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/calendar/view}">Calendar</a>
+                </li>
+            </ul>
+
+            <!-- Right-aligned items (Theme Dropdown) -->
+            <div class="d-flex align-items-center">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-circle-half"></i> Theme
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeDropdown">
+                        <li><button class="dropdown-item" data-theme-value="light"><i class="bi bi-sun-fill me-2"></i>Light</button></li>
+                        <li><button class="dropdown-item" data-theme-value="dark"><i class="bi bi-moon-fill me-2"></i>Dark</button></li>
+                        <li><button class="dropdown-item" data-theme-value="auto"><i class="bi bi-circle-half me-2"></i>Auto</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+</body>
+</html>

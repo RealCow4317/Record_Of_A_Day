@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="commentTree(commentList, depth)">
+        <th:block th:each="comment : ${commentList}">
+            <div class="comment-item" th:style="'margin-left: ' + (${depth} * 40) + 'px;'">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <strong th:text="${comment.writer}">작성자</strong>
+                        <small class="text-muted" th:text="${#dates.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</small>
+                    </div>
+                    <div>
+                        <th:block th:if="${session.loginUser != null && session.loginUser.id == comment.writer}">
+                            <button class="btn btn-sm btn-outline-secondary edit-btn" th:data-comment-id="${comment.id}">수정</button>
+                            <a th:href="@{/comment/delete/{id}/{postId}(id=${comment.id}, postId=${board.id})}" 
+                               class="btn btn-sm btn-outline-danger" 
+                               onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
+                        </th:block>
+                        <th:block th:if="${session.loginUser != null}">
+                            <button class="btn btn-sm btn-outline-primary reply-btn" th:data-comment-id="${comment.id}">답글</button>
+                        </th:block>
+                    </div>
+                </div>
+                <p th:text="${comment.content}">댓글 내용</p>
+
+                <div th:if="${session.loginUser != null && session.loginUser.id == comment.writer}" th:id="'edit-form-' + ${comment.id}" style="display: none;" class="mt-2 mb-3 edit-form">
+                    <form th:action="@{/comment/edit}" method="post">
+                        <input type="hidden" name="id" th:value="${comment.id}" />
+                        <input type="hidden" name="boardId" th:value="${board.id}" />
+                        <div class="input-group">
+                            <textarea name="content" class="form-control" rows="2" th:text="${comment.content}" required></textarea>
+                            <button type="submit" class="btn btn-warning">수정</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div th:if="${session.loginUser != null}" th:id="'reply-form-' + ${comment.id}" style="display: none;" class="mt-2 mb-3 reply-form">
+                    <form th:action="@{/comment/add}" method="post">
+                        <input type="hidden" name="boardId" th:value="${board.id}" />
+                        <input type="hidden" name="parentId" th:value="${comment.id}" />
+                        <div class="input-group">
+                            <textarea name="content" class="form-control" rows="2" placeholder="답글을 입력하세요..." required></textarea>
+                            <button type="submit" class="btn btn-primary">등록</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 대댓글 재귀 호출 -->
+                <div th:if="${comment.replies != null && !comment.replies.empty}">
+                    <div th:replace="~{board/comment_tree :: commentTree(${comment.replies}, ${depth + 1})}"></div>
+                </div>
+            </div>
+            <hr>
+        </th:block>
+    </div>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>게시글 수정 - 관리자</title>
+</head>
+<body>
+    <div layout:fragment="content" class="container mt-4">
+        <div class="row">
+            <div class="col-md-3">
+                <div th:replace="~{admin/common/adminNav :: adminNav}"></div>
+            </div>
+            <div class="col-md-9">
+                <h2 class="mb-4">게시글 수정</h2>
+                <div class="card shadow-sm p-4">
+                    <form th:action="@{/admin/posts/edit}" method="post">
+                        <input type="hidden" name="id" th:value="${board.id}">
+                        
+                        <div class="mb-3">
+                            <label for="title" class="form-label">제목</label>
+                            <input type="text" class="form-control" id="title" name="title" th:value="${board.title}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="categoryId" class="form-label">카테고리</label>
+                            <select class="form-select" id="categoryId" name="categoryId" required>
+                                <option th:each="cat : ${categoryList}" 
+                                        th:value="${cat.id}" 
+                                        th:text="${cat.name}"
+                                        th:selected="${cat.id == board.categoryId}"></option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="content" class="form-label">내용</label>
+                            <textarea class="form-control" id="content" name="content" rows="10" th:text="${board.content}"></textarea>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="pinned" name="pinned" value="true" th:checked="${board.pinned}">
+                            <label class="form-check-label" for="pinned">상단 고정</label>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a th:href="@{/admin/posts}" class="btn btn-secondary">취소</a>
+                            <button type="submit" class="btn btn-primary">수정 완료</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summernote Initialization -->
+        <script th:inline="javascript">
+            $(document).ready(function () {
+                $('#content').summernote({
+                    height: 400,
+                    lang: 'ko-KR',
+                    placeholder: '내용을 입력하세요...',
+                    callbacks: {
+                        onImageUpload: function (files) {
+                            for (let i = 0; i < files.length; i++) {
+                                sendFile(files[i]);
+                            }
+                        }
+                    }
+                });
+
+                function sendFile(file) {
+                    const data = new FormData();
+                    data.append("file", file);
+                    $.ajax({
+                        url: '/upload/image',
+                        method: 'POST',
+                        data: data,
+                        contentType: false,
+                        processData: false,
+                        success: function (url) {
+                            $('#content').summernote('insertImage', url);
+                        },
+                        error: function (xhr, status, error) {
+                            alert("이미지 업로드 실패: " + error);
+                        }
+                    });
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>

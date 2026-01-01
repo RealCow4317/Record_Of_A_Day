@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>캘린더</title>
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            padding-top: 60px;
+        }
+        #calendar-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .fc-daygrid-day {
+            position: relative;
+            min-height: 100px;
+            overflow: hidden;
+        }
+        .fc-daygrid-day.diary-with-image {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .fc-daygrid-day.diary-with-image .fc-daygrid-day-frame {
+            position: relative;
+            z-index: 1;
+        }
+        .fc-daygrid-day-frame .fc-daygrid-day-top {
+            position: relative;
+            z-index: 3;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 3px 5px;
+            border-radius: 3px;
+            display: inline-block;
+            margin: 2px;
+        }
+        .fc-daygrid-event {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            padding: 4px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 0.85em;
+            z-index: 2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            box-sizing: border-box;
+        }
+        .fc-daygrid-day.diary-with-image .fc-daygrid-event {
+            display: none !important;
+        }
+        .fc-daygrid-event-dot {
+            display: none;
+        }
+        .fc-daygrid-day.fc-day-today {
+            border: 2px solid #007bff;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div id="calendar-container">
+            <div id='calendar'></div>
+        </div>
+
+        <!-- Diary Entry Modal -->
+        <div class="modal fade" id="diaryModal" tabindex="-1" aria-labelledby="diaryModalLabel">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form id="diaryForm" th:action="@{/calendar/diary}" method="post" enctype="multipart/form-data">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="diaryModalLabel">오늘의 일기 작성</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="diaryDate" id="modalDiaryDate">
+                            <div class="mb-3" id="existingImagePreviewContainer" style="display: none;">
+                                <label class="form-label">기존 이미지:</label>
+                                <img id="existingImagePreview" src="" alt="Existing Image" class="img-fluid mb-2">
+                                <small class="form-text text-muted">새로운 이미지를 업로드하면 기존 이미지가 교체됩니다.</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="diaryContent" class="form-label">한 줄 일기:</label>
+                                <input type="text" class="form-control" id="diaryContent" name="content" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="diaryImage" class="form-label">사진 업로드:</label>
+                                <input type="file" class="form-control" id="diaryImage" name="imageFile" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                            <button type="submit" class="btn btn-primary">저장</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- FullCalendar JS -->
+        <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+        <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/ko.js'></script>
+
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                const contextPath = '';
+                const memberNo = /*[[${session.loginUser.memberNo}]]*/ 0;
+                
+                var calendarEl = document.getElementById('calendar');
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    locale: 'ko',
+                    height: 'auto',
+                    dayMaxEvents: true,
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth'
+                    },
+                    dateClick: function(info) {
+                        const clickedDate = new Date(info.dateStr);
+                        clickedDate.setHours(0, 0, 0, 0);
+
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+
+                        if (clickedDate.getTime() <= today.getTime()) {
+                            document.getElementById('diaryForm').reset();
+                            document.getElementById('existingImagePreviewContainer').style.display = 'none';
+                            document.getElementById('existingImagePreview').src = '';
+
+                            fetch(contextPath + '/calendar/diary-entry?date=' + info.dateStr)
+                                .then(response => {
+                                    if (!response.ok) {
+                                        if (response.status === 404) return null;
+                                        throw new Error('Network response was not ok.');
+                                    }
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    var modal = new bootstrap.Modal(document.getElementById('diaryModal'));
+                                    document.getElementById('modalDiaryDate').value = info.dateStr;
+                                    document.getElementById('diaryModalLabel').innerText = info.dateStr + ' 일기 작성';
+
+                                    if (data) {
+                                        document.getElementById('diaryContent').value = data.content;
+                                        if (data.imagePath) {
+                                            document.getElementById('existingImagePreview').src = contextPath + data.imagePath;
+                                            document.getElementById('existingImagePreviewContainer').style.display = 'block';
+                                        }
+                                    }
+                                    modal.show();
+                                })
+                                .catch(error => {
+                                    console.error('Error fetching diary entry:', error);
+                                    alert('일기 정보를 불러오는데 실패했습니다. 새로운 일기를 작성해주세요.');
+                                    var modal = new bootstrap.Modal(document.getElementById('diaryModal'));
+                                    document.getElementById('modalDiaryDate').value = info.dateStr;
+                                    document.getElementById('diaryModalLabel').innerText = info.dateStr + ' 일기 작성';
+                                    modal.show();
+                                });
+                        } else {
+                            alert('미래 날짜에는 일기를 작성할 수 없습니다.');
+                        }
+                    },
+                    events: {
+                        url: contextPath + '/calendar/events',
+                        method: 'GET',
+                        failure: function() {
+                            alert('일기 데이터를 불러오지 못했습니다!');
+                        }
+                    },
+                    eventContent: function(arg) {
+                        if (!arg.event.extendedProps.imagePath) {
+                            var contentEl = document.createElement('div');
+                            contentEl.innerHTML = arg.event.title;
+                            return { domNodes: [contentEl] };
+                        }
+                        return { html: '' };
+                    },
+                    eventDidMount: function(info) {
+                        if (info.event.extendedProps && info.event.extendedProps.imagePath) {
+                            const dayEl = info.el.closest('.fc-daygrid-day');
+                            const imagePath = contextPath + info.event.extendedProps.imagePath;
+
+                            if (dayEl) {
+                                dayEl.style.backgroundImage = 'url(' + imagePath + ')';
+                                dayEl.style.backgroundSize = 'cover';
+                                dayEl.style.backgroundPosition = 'center';
+                                dayEl.style.backgroundRepeat = 'no-repeat';
+                                dayEl.classList.add('diary-with-image');
+                            }
+                            if (info.el) {
+                                info.el.style.display = 'none';
+                            }
+                        }
+                        
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const eventDate = info.event.start;
+                        if (eventDate) {
+                            eventDate.setHours(0, 0, 0, 0);
+                            if (eventDate.getTime() === today.getTime()) {
+                                const dayCell = info.el.closest('.fc-daygrid-day');
+                                if (dayCell) dayCell.classList.add('fc-day-today');
+                            }
+                        }
+                    }
+                });
+                calendar.render();
+
+                var diaryModalEl = document.getElementById('diaryModal');
+                diaryModalEl.addEventListener('hidden.bs.modal', function (event) {
+                    calendar.refetchEvents();
+                    document.getElementById('diaryForm').reset();
+                });
+            });
+        </script>
+    </div>
+</body>
+</html>

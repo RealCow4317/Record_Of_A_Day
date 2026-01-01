@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>게시글관리</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div th:replace="~{admin/common/adminNav :: adminNav}"></div>
+        <div class="container mt-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>📋 게시글 관리</h2>
+                <a th:href="@{/admin/posts/write}" class="btn btn-primary">➕ 새 글 작성</a>
+            </div>
+
+            <!-- 검색 & 카테고리 필터 -->
+            <form method="get" th:action="@{/admin/posts}" class="row g-2 mb-4">
+                <div class="col-md-4">
+                    <select name="categoryId" class="form-select">
+                        <option value="">전체 카테고리</option>
+                        <option th:each="cat : ${categories}" 
+                                th:value="${cat.id}" 
+                                th:text="${cat.name}"
+                                th:selected="${cat.id == categoryId}"></option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <input type="text" name="keyword" class="form-control" placeholder="검색어를 입력하세요" th:value="${keyword}" />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-secondary w-100">검색</button>
+                </div>
+            </form>
+
+            <!-- 게시글 테이블 -->
+            <table class="table table-hover table-bordered bg-white">
+                <thead class="table-dark">
+                    <tr>
+                        <th>번호</th>
+                        <th>카테고리</th>
+                        <th>제목</th>
+                        <th>작성자</th>
+                        <th>작성일</th>
+                        <th>조회수</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="post : ${posts}" th:onclick="|location.href='@{/admin/posts/view/{id}(id=${post.id})}'|" style="cursor: pointer;">
+                        <td th:text="${post.id}">id</td>
+                        <td th:text="${post.categoryName}">카테고리</td>
+                        <td>
+                            <span th:if="${post.pinned}">📌 </span>
+                            <span th:text="${post.title}">제목</span>
+                            <span th:if="${post.commentCount > 0}" class="text-muted small" th:text="'(' + ${post.commentCount} + ')'"></span>
+                        </td>
+                        <td th:text="${post.writer}">작성자</td>
+                        <td th:text="${#dates.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</td>
+                        <td class="text-center" th:text="${post.views}">0</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- 페이징 -->
+            <nav th:if="${totalPages > 0}">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${currentPage <= 1} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/posts(page=${currentPage - 1}, keyword=${keyword}, categoryId=${categoryId})}">«</a>
+                    </li>
+                    <li th:each="i : ${#numbers.sequence(1, totalPages)}" 
+                        class="page-item" th:classappend="${i == currentPage} ? 'active'">
+                        <a class="page-link" th:href="@{/admin/posts(page=${i}, keyword=${keyword}, categoryId=${categoryId})}" th:text="${i}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage >= totalPages} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/posts(page=${currentPage + 1}, keyword=${keyword}, categoryId=${categoryId})}">»</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</body>
+</html>

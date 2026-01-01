@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.blog.dao.TodoDAO">
+
+    <resultMap id="todoResultMap" type="com.example.blog.dto.TodoDTO">
+        <id property="id" column="id"/>
+        <result property="memberNo" column="member_no"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="content" column="content"/>
+        <result property="completed" column="completed"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="dueDate" column="due_date"/>
+    </resultMap>
+
+    <select id="findByMemberNo" resultMap="todoResultMap">
+        SELECT id, member_no, parent_id, content, completed, created_at, due_date
+        FROM todo
+        WHERE member_no = #{memberNo}
+        ORDER BY IFNULL(parent_id, id), parent_id, created_at ASC;
+    </select>
+
+    <select id="findById" resultMap="todoResultMap">
+        SELECT id, member_no, parent_id, content, completed, created_at, due_date
+        FROM todo
+        WHERE id = #{id};
+    </select>
+
+    <insert id="save" parameterType="com.example.blog.dto.TodoDTO" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO todo (member_no, parent_id, content, completed, due_date)
+        VALUES (#{memberNo}, #{parentId}, #{content}, #{completed}, #{dueDate});
+    </insert>
+
+    <update id="update" parameterType="com.example.blog.dto.TodoDTO">
+        UPDATE todo
+        SET content = #{content},
+            completed = #{completed},
+            due_date = #{dueDate}
+        WHERE id = #{id};
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM todo WHERE id = #{id};
+    </delete>
+
+</mapper>

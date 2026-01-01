@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="sidebar" class="offcanvas offcanvas-start" tabindex="-1" id="sideMenu" aria-labelledby="sideMenuLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="sideMenuLabel">메뉴</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link" th:href="@{/}">홈</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/board/list}">게시판</a></li>
+
+                <th:block th:if="${session.loginUser != null}">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/member/profile}">내 정보</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/member/logout}">
+                            로그아웃 (<span th:text="${session.loginUser.name}">사용자</span>님)
+                        </a>
+                    </li>
+                </th:block>
+                <th:block th:unless="${session.loginUser != null}">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/member/login}">로그인</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/member/join}">회원가입</a></li>
+                </th:block>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
