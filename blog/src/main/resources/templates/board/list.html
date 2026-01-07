@@ -8,6 +8,31 @@
 </head>
 <body>
     <div layout:fragment="content" class="container mt-5">
+        <style>
+            .board-table {
+                table-layout: fixed;
+                width: 100%;
+            }
+            .board-table th, .board-table td {
+                vertical-align: middle;
+            }
+            /* 제목을 제외한 컬럼들은 줄바꿈 금지 및 가운데 정렬 */
+            .col-meta {
+                white-space: nowrap;
+                text-align: center;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            /* 제목 컬럼 스타일 */
+            .col-title {
+                text-align: left;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 0; /* flex나 table-cell에서 ellipsis 작동을 위한 핵 */
+            }
+        </style>
+
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>📋 게시글 목록</h2>
             <a th:if="${session.loginUser != null}" th:href="@{/board/write}" class="btn btn-primary">✏️ 글쓰기</a>
@@ -36,15 +61,23 @@
         </form>
 
         <div class="table-responsive">
-            <table class="table table-hover table-bordered">
-                <thead class="table-dark">
+            <table class="table table-hover table-bordered board-table">
+                <colgroup>
+                    <col style="width: 5%">
+                    <col style="width: 15%">
+                    <col style="width: 45%">
+                    <col style="width: 10%">
+                    <col style="width: 15%">
+                    <col style="width: 10%">
+                </colgroup>
+                <thead class="table-dark text-center">
                     <tr>
-                        <th scope="col" style="width: 30px">✖️</th>
-                        <th scope="col">카테고리</th>
+                        <th scope="col">#</th>
+                        <th scope="col" class="col-meta">카테고리</th>
                         <th scope="col">제목</th>
-                        <th scope="col">작성자</th>
-                        <th scope="col">작성일</th>
-                        <th class="center" scope="col" style="width: 60px">조회수</th>
+                        <th scope="col" class="col-meta">작성자</th>
+                        <th scope="col" class="col-meta">작성일</th>
+                        <th scope="col" class="col-meta">조회수</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,14 +86,14 @@
                         th:onclick="|location.href='@{/board/view/{id}(id=${board.id})}'|" 
                         class="table-warning" style="cursor: pointer;">
                         <td class="text-center">📌</td>
-                        <td th:text="${board.categoryName}">카테고리</td>
-                        <td class="text-primary fw-bold">
+                        <td class="col-meta" th:text="${board.categoryName}">카테고리</td>
+                        <td class="col-title fw-bold">
                             <span th:text="${board.title}">제목</span>
-                            <span th:if="${board.commentCount > 0}" class="text-muted" th:text="'(' + ${board.commentCount} + ')'"></span>
+                            <span th:if="${board.commentCount > 0}" class="text-muted small" th:text="'[' + ${board.commentCount} + ']'"></span>
                         </td>
-                        <td th:text="${board.writer}">작성자</td>
-                        <td th:text="${#dates.format(board.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</td>
-                        <td class="text-center" th:text="${board.views}">0</td>
+                        <td class="col-meta" th:text="${board.writer}">작성자</td>
+                        <td class="col-meta" th:text="${#dates.format(board.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</td>
+                        <td class="col-meta" th:text="${board.views}">0</td>
                     </tr>
                     
                     <!-- Normal Posts -->
@@ -68,14 +101,14 @@
                         th:onclick="|location.href='@{/board/view/{id}(id=${board.id})}'|" 
                         style="cursor: pointer;">
                         <td class="text-center"></td>
-                        <td th:text="${board.categoryName}">카테고리</td>
-                        <td class="text-primary">
+                        <td class="col-meta" th:text="${board.categoryName}">카테고리</td>
+                        <td class="col-title">
                             <span th:text="${board.title}">제목</span>
-                            <span th:if="${board.commentCount > 0}" class="text-muted" th:text="'(' + ${board.commentCount} + ')'"></span>
+                            <span th:if="${board.commentCount > 0}" class="text-muted small" th:text="'[' + ${board.commentCount} + ']'"></span>
                         </td>
-                        <td th:text="${board.writer}">작성자</td>
-                        <td th:text="${#dates.format(board.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</td>
-                        <td class="text-center" th:text="${board.views}">0</td>
+                        <td class="col-meta" th:text="${board.writer}">작성자</td>
+                        <td class="col-meta" th:text="${#dates.format(board.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</td>
+                        <td class="col-meta" th:text="${board.views}">0</td>
                     </tr>
                 </tbody>
             </table>
