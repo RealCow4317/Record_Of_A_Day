@@ -1,0 +1,51 @@
+{
+  "name": "Record Of A Day",
+  "short_name": "ROD",
+  "description": "생각은 나누고, 할 일은 명확하게. 영감을 얻는 커뮤니티부터 꼼꼼한 일정 관리까지.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/img/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/img/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["social", "productivity"],
+  "shortcuts": [
+    {
+      "name": "게시판",
+      "short_name": "게시판",
+      "description": "커뮤니티 게시판으로 이동",
+      "url": "/board/list",
+      "icons": [
+        {
+          "src": "/img/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "할 일",
+      "short_name": "할 일",
+      "description": "TODO 리스트로 이동",
+      "url": "/todo/list",
+      "icons": [
+        {
+          "src": "/img/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
