@@ -2,13 +2,14 @@ package com.example.blog.service;
 
 import com.example.blog.dao.DiaryDAO;
 import com.example.blog.dto.DiaryDTO;
+import net.coobird.thumbnailator.Thumbnails; // Import Thumbnailator
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.sql.Date; // Add this import
+import java.sql.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,19 +26,38 @@ public class DiaryServiceImpl implements DiaryService {
     public void saveDiary(DiaryDTO diary, MultipartFile imageFile) throws Exception {
         // Handle file upload
         String imagePath = null;
+        String thumbnailPath = null;
+
         if (imageFile != null && !imageFile.isEmpty()) {
             String originalFilename = imageFile.getOriginalFilename();
-            String storedFilename = UUID.randomUUID().toString() + "_" + originalFilename;
-            File dest = new File(uploadDir + storedFilename);
-            
+            String uuid = UUID.randomUUID().toString();
+            String storedFilename = uuid + "_" + originalFilename;
+            String thumbnailFilename = "thumb_" + uuid + "_" + originalFilename;
+
             // Ensure the upload directory exists
             File uploadDirFile = new File(uploadDir);
             if (!uploadDirFile.exists()) {
                 uploadDirFile.mkdirs();
             }
 
+            File dest = new File(uploadDir + storedFilename);
+            File thumbDest = new File(uploadDir + thumbnailFilename);
+
+            // Save original image
             imageFile.transferTo(dest);
             imagePath = "/upload/" + storedFilename;
+
+            // Generate thumbnail (300x300)
+            try {
+                Thumbnails.of(dest)
+                        .size(300, 300)
+                        .toFile(thumbDest);
+                thumbnailPath = "/upload/" + thumbnailFilename;
+            } catch (Exception e) {
+                // If thumbnail generation fails, fallback to original image or handle error
+                e.printStackTrace();
+                thumbnailPath = imagePath; 
+            }
         }
 
         // Check for existing diary entry
@@ -48,11 +68,13 @@ public class DiaryServiceImpl implements DiaryService {
             existingDiary.setContent(diary.getContent());
             if (imagePath != null) { // Only update image if a new one was provided
                 existingDiary.setImagePath(imagePath);
+                existingDiary.setThumbnailPath(thumbnailPath);
             }
             diaryDAO.update(existingDiary);
         } else {
             // Insert new entry
             diary.setImagePath(imagePath);
+            diary.setThumbnailPath(thumbnailPath);
             diaryDAO.save(diary);
         }
     }

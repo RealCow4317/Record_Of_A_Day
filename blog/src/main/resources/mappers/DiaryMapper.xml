@@ -11,22 +11,23 @@
         <result property="diaryDate" column="diary_date"/>
         <result property="content" column="content"/>
         <result property="imagePath" column="image_path"/>
+        <result property="thumbnailPath" column="thumbnail_path"/>
     </resultMap>
 
     <insert id="save" parameterType="com.example.blog.dto.DiaryDTO">
-        INSERT INTO diary (member_no, diary_date, content, image_path)
-        VALUES (#{memberNo}, #{diaryDate}, #{content}, #{imagePath})
+        INSERT INTO diary (member_no, diary_date, content, image_path, thumbnail_path)
+        VALUES (#{memberNo}, #{diaryDate}, #{content}, #{imagePath}, #{thumbnailPath})
     </insert>
 
     <select id="findByMemberNoAndDateRange" resultMap="diaryResultMap">
-        SELECT id, member_no, diary_date, content, image_path
+        SELECT id, member_no, diary_date, content, image_path, thumbnail_path
         FROM diary
         WHERE member_no = #{memberNo}
           AND diary_date BETWEEN #{startDate} AND #{endDate}
     </select>
 
     <select id="findByMemberNoAndDiaryDate" resultMap="diaryResultMap">
-        SELECT id, member_no, diary_date, content, image_path
+        SELECT id, member_no, diary_date, content, image_path, thumbnail_path
         FROM diary
         WHERE member_no = #{memberNo} AND diary_date = #{diaryDate}
     </select>
@@ -34,7 +35,8 @@
     <update id="update" parameterType="com.example.blog.dto.DiaryDTO">
         UPDATE diary
         SET content = #{content},
-            image_path = #{imagePath}
+            image_path = #{imagePath},
+            thumbnail_path = #{thumbnailPath}
         WHERE id = #{id}
     </update>
 

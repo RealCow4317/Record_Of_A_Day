@@ -52,7 +52,9 @@ public class CalendarController {
             event.put("allDay", true);
             // Add extendedProps for imagePath
             Map<String, Object> extendedProps = new HashMap<>();
-            extendedProps.put("imagePath", entry.getImagePath());
+            // Use thumbnailPath for calendar view if available, otherwise fallback to original imagePath
+            String displayImage = (entry.getThumbnailPath() != null) ? entry.getThumbnailPath() : entry.getImagePath();
+            extendedProps.put("imagePath", displayImage);
             event.put("extendedProps", extendedProps);
             events.add(event);
         }

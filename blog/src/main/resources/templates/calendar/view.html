@@ -18,12 +18,12 @@
         }
         .fc-daygrid-day {
             position: relative;
-            min-height: 100px;
+            min-height: 120px;
             overflow: hidden;
         }
         .fc-daygrid-day.diary-with-image {
-            background-size: cover;
-            background-position: center;
+            background-size: cover; /* 이미지를 꽉 채우도록 다시 변경 */
+            background-position: center center; /* 중앙 정렬 */
             background-repeat: no-repeat;
         }
         .fc-daygrid-day.diary-with-image .fc-daygrid-day-frame {
@@ -33,11 +33,27 @@
         .fc-daygrid-day-frame .fc-daygrid-day-top {
             position: relative;
             z-index: 3;
-            background-color: rgba(255, 255, 255, 0.7);
-            padding: 3px 5px;
-            border-radius: 3px;
-            display: inline-block;
-            margin: 2px;
+            background-color: rgba(255, 255, 255, 0.8);
+            width: 30px; /* 30px에서 42px로 늘려 "11일"이 한 줄에 들어가도록 수정 */
+            height: 30px;
+            border-radius: 50%;
+            margin: 5px;
+            
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            white-space: nowrap; /* 줄바꿈 방지 */
+        }
+        .fc-daygrid-day-number {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: 0 !important;
+            margin: 0 !important;
+            font-size: 0.9rem;
+            text-decoration: none;
+            color: inherit;
         }
         .fc-daygrid-event {
             position: absolute;
@@ -65,6 +81,22 @@
             border: 2px solid #007bff;
             box-sizing: border-box;
         }
+
+        /* 요일별 색상 지정 (토요일: 파란색, 일요일: 빨간색) */
+        /* 헤더 (일, 월, 화...) */
+        .fc-col-header-cell.fc-day-sun a {
+            color: #dc3545 !important; /* Red */
+        }
+        .fc-col-header-cell.fc-day-sat a {
+            color: #0d6efd !important; /* Blue */
+        }
+        /* 날짜 숫자 */
+        .fc-daygrid-day.fc-day-sun .fc-daygrid-day-number {
+            color: #dc3545 !important;
+        }
+        .fc-daygrid-day.fc-day-sat .fc-daygrid-day-number {
+            color: #0d6efd !important;
+        }
     </style>
 </head>
 <body>
@@ -91,7 +123,7 @@
                             </div>
                             <div class="mb-3">
                                 <label for="diaryContent" class="form-label">한 줄 일기:</label>
-                                <input type="text" class="form-control" id="diaryContent" name="content" required>
+                                <input type="text" class="form-control" id="diaryContent" name="content">
                             </div>
                             <div class="mb-3">
                                 <label for="diaryImage" class="form-label">사진 업로드:</label>
@@ -100,7 +132,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                            <button type="submit" class="btn btn-primary">저장</button>
+                            <button type="button" id="saveDiaryBtn" class="btn btn-primary">저장</button>
                         </div>
                     </form>
                 </div>
@@ -115,6 +147,38 @@
             document.addEventListener('DOMContentLoaded', function() {
                 const contextPath = '';
                 const memberNo = /*[[${session.loginUser.memberNo}]]*/ 0;
+                
+                // Form validation logic
+                const saveBtn = document.getElementById('saveDiaryBtn');
+                const diaryForm = document.getElementById('diaryForm');
+                
+                saveBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const contentInput = document.getElementById('diaryContent');
+                    const imageInput = document.getElementById('diaryImage');
+                    const existingImage = document.getElementById('existingImagePreview').getAttribute('src');
+                    
+                    const hasContent = contentInput.value.trim().length > 0;
+                    const hasNewImage = imageInput.files.length > 0;
+                    const hasExistingImage = existingImage && existingImage !== '';
+                    const hasImage = hasNewImage || hasExistingImage;
+                    
+                    if (!hasContent && hasImage) {
+                        if (confirm('글을 작성하지 않으셨습니다 그대로 업로드 하시겠습니까?')) {
+                            diaryForm.submit();
+                        }
+                    } else if (hasContent && !hasImage) {
+                        if (confirm('사진을 첨부하지 않았습니다. 그대로 업로드 하시겠습니까?')) {
+                            diaryForm.submit();
+                        }
+                    } else if (!hasContent && !hasImage) {
+                         alert('내용이나 이미지를 입력해주세요.');
+                    } else {
+                        // Both content and image exist
+                        diaryForm.submit();
+                    }
+                });
                 
                 var calendarEl = document.getElementById('calendar');
                 var calendar = new FullCalendar.Calendar(calendarEl, {

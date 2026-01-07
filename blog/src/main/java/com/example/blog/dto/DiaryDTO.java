@@ -8,6 +8,7 @@ public class DiaryDTO {
     private Date diaryDate;
     private String content;
     private String imagePath;
+    private String thumbnailPath;
 
     // Getters and Setters
     public int getId() {
@@ -48,5 +49,13 @@ public class DiaryDTO {
 
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
+    }
+
+    public String getThumbnailPath() {
+        return thumbnailPath;
+    }
+
+    public void setThumbnailPath(String thumbnailPath) {
+        this.thumbnailPath = thumbnailPath;
     }
 }
