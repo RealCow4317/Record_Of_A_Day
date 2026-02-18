@@ -3,6 +3,7 @@ package com.example.blog.controller;
 import com.example.blog.dto.DiaryDTO;
 import com.example.blog.dto.MemberDTO;
 import com.example.blog.service.DiaryService;
+import com.example.blog.service.HolidayService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,9 @@ public class CalendarController {
 
     @Autowired
     private DiaryService diaryService;
+
+    @Autowired
+    private HolidayService holidayService;
 
     @GetMapping("/view")
     public String calendarView(HttpSession session) {
@@ -95,5 +99,11 @@ public class CalendarController {
         }
 
         return "redirect:/calendar/view";
+    }
+
+    @GetMapping("/holidays")
+    @ResponseBody
+    public List<Map<String, Object>> getHolidays(@RequestParam String start, @RequestParam String end) {
+        return holidayService.getHolidays(start, end);
     }
 }
