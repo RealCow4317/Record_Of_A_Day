@@ -73,28 +73,42 @@
         stompClient.connect({}, function(frame) {
             console.log('WebSocket 연결 성공:', frame);
 
-            // 알림 구독
+            // 전체 알림 구독
             stompClient.subscribe('/topic/notifications', function(message) {
-                // 메시지가 문자열인 경우 그대로 사용, JSON인 경우 파싱
-                let notificationMessage;
-                try {
-                    notificationMessage = JSON.parse(message.body);
-                } catch (e) {
-                    notificationMessage = message.body;
-                }
-                console.log('알림 수신:', notificationMessage);
-
-                // 브라우저 알림 표시
-                showBrowserNotification(notificationMessage);
-
-                // 페이지에 알림 표시 (선택사항)
-                showPageNotification(notificationMessage);
+                handleIncomingNotification(message);
             });
+
+            // 개별 알림 구독 (사용자 ID 기반)
+            if (window.currentUserId) {
+                console.log('개별 알림 구독 시작:', window.currentUserId);
+                stompClient.subscribe('/topic/user-notif/' + window.currentUserId, function(message) {
+                    handleIncomingNotification(message);
+                });
+            }
         }, function(error) {
             console.error('WebSocket 연결 실패:', error);
             // 재연결 시도 (5초 후)
             setTimeout(connect, 5000);
         });
+    }
+
+    /**
+     * 수신된 알림 처리 공통 함수
+     */
+    function handleIncomingNotification(message) {
+        let notificationMessage;
+        try {
+            notificationMessage = JSON.parse(message.body);
+        } catch (e) {
+            notificationMessage = message.body;
+        }
+        console.log('알림 수신:', notificationMessage);
+
+        // 브라우저 알림 표시
+        showBrowserNotification(notificationMessage);
+
+        // 페이지 내 토스트 알림 표시
+        showPageNotification(notificationMessage);
     }
 
     /**

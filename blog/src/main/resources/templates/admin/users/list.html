@@ -12,7 +12,10 @@
         <div class="container mt-5">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>👥 전체 회원 목록</h2>
-                <a th:href="@{/admin/users/add}" class="btn btn-success btn-sm">+ 회원 추가</a>
+                <div>
+                    <button type="button" class="btn btn-warning btn-sm me-2" onclick="sendAllNotification()">📢 전체 알림 보내기</button>
+                    <a th:href="@{/admin/users/add}" class="btn btn-success btn-sm">+ 회원 추가</a>
+                </div>
             </div>
 
             <div class="card p-3 shadow-sm">
@@ -35,6 +38,9 @@
                             <td th:text="${user.email}">email</td>
                             <td th:text="${user.admin ? '✔' : '✖'}">✖</td>
                             <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-info text-white" 
+                                        th:data-user-id="${user.id}"
+                                        onclick="sendUserNotification(this.getAttribute('data-user-id'))">🔔 알림</button>
                                 <a th:href="@{/admin/users/edit/{no}(no=${user.memberNo})}" class="btn btn-sm btn-outline-primary">수정</a>
                                 <a th:href="@{/admin/users/delete/{no}(no=${user.memberNo})}"
                                    class="btn btn-danger btn-sm"
@@ -45,6 +51,40 @@
                 </table>
             </div>
         </div>
+
+        <script>
+            function sendAllNotification() {
+                const message = prompt("전체 회원에게 보낼 알림 내용을 입력하세요.");
+                if (message) {
+                    fetch('/notification/send/all', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: 'message=' + encodeURIComponent(message)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) alert(data.message);
+                        else alert("실패: " + data.message);
+                    });
+                }
+            }
+
+            function sendUserNotification(userId) {
+                const message = prompt(userId + "님에게 보낼 알림 내용을 입력하세요.");
+                if (message) {
+                    fetch('/notification/send/user', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: 'userId=' + encodeURIComponent(userId) + '&message=' + encodeURIComponent(message)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) alert(data.message);
+                        else alert("실패: " + data.message);
+                    });
+                }
+            }
+        </script>
     </div>
 </body>
 </html>
