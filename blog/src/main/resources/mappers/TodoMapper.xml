@@ -19,7 +19,11 @@
         SELECT id, member_no, parent_id, content, completed, created_at, due_date
         FROM todo
         WHERE member_no = #{memberNo}
-        ORDER BY IFNULL(parent_id, id), parent_id, created_at ASC;
+        ORDER BY 
+            CASE WHEN parent_id IS NULL THEN id ELSE parent_id END, 
+            parent_id IS NOT NULL, 
+            due_date ASC, 
+            created_at ASC;
     </select>
 
     <select id="findById" resultMap="todoResultMap">
@@ -43,6 +47,12 @@
 
     <delete id="deleteById">
         DELETE FROM todo WHERE id = #{id};
+    </delete>
+
+    <delete id="deleteCompletedByMemberNo">
+        DELETE FROM todo 
+        WHERE member_no = #{memberNo} 
+          AND completed = 1;
     </delete>
 
 </mapper>

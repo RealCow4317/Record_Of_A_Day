@@ -57,11 +57,27 @@ public class TodoController {
             return "error";
         }
         
-        // Only allow updating the 'completed' status via this endpoint for security
+        // Update all editable fields
+        if (todo.getContent() != null) {
+            existingTodo.setContent(todo.getContent());
+        }
+        if (todo.getDueDate() != null) {
+            existingTodo.setDueDate(todo.getDueDate());
+        }
         existingTodo.setCompleted(todo.isCompleted());
+        
         todoService.update(existingTodo);
 
         return "success";
+    }
+
+    @GetMapping("/delete-completed")
+    public String deleteCompleted(HttpSession session) {
+        MemberDTO loginUser = (MemberDTO) session.getAttribute("loginUser");
+        if (loginUser != null) {
+            todoService.deleteCompletedByMemberNo(loginUser.getMemberNo());
+        }
+        return "redirect:/todo/list";
     }
 
     @GetMapping("/delete/{id}")

@@ -3,77 +3,162 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/default}">
 <head>
-    <title>TODO 리스트</title>
+    <title>TODO 리스트 - Record of a Day</title>
     <style>
-        .todo-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border-bottom: 1px solid var(--bs-border-color); }
-        .todo-item.completed .todo-content { text-decoration: line-through; opacity: 0.6; }
-        .todo-content { flex-grow: 1; }
-        .todo-due-date { font-size: 0.9em; color: var(--bs-secondary-color); }
-        .todo-actions { visibility: hidden; }
-        .todo-item:hover .todo-actions { visibility: visible; }
-        .sub-task-list { padding-left: 2.5rem; border-left: 2px solid var(--bs-border-color); margin-left: 0.7rem; }
-        .sub-task-form { padding: 1rem 0 0 2.5rem; margin-left: 0.7rem; border-left: 2px solid var(--bs-border-color); }
+        :root {
+            --todo-bg: #ffffff;
+            --todo-border: #eef2f7;
+            --todo-accent: #4e73df;
+            --todo-text: #2e384d;
+            --todo-muted: #858796;
+            --todo-completed: #1cc88a;
+        }
+
+        .todo-container { max-width: 900px; margin: 2rem auto; }
+        .todo-card { background: var(--todo-bg); border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid var(--todo-border); overflow: hidden; }
+        
+        /* Header Controls */
+        .todo-controls { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; background: #f8f9fc; border-bottom: 1px solid var(--todo-border); }
+        .filter-btn { font-size: 0.85rem; padding: 0.4rem 1rem; border-radius: 20px; border: 1px solid var(--todo-border); background: #fff; cursor: pointer; transition: all 0.2s; }
+        .filter-btn.active { background: var(--todo-accent); color: #fff; border-color: var(--todo-accent); }
+
+        /* Todo Items */
+        .todo-item { display: flex; align-items: center; padding: 1rem 1.5rem; transition: all 0.2s; border-bottom: 1px solid var(--todo-border); position: relative; }
+        .todo-item:hover { background-color: #fcfdfe; }
+        .todo-item.completed { background-color: #fafbfc; }
+        .todo-item.completed .todo-content-text { text-decoration: line-through; color: var(--todo-muted); }
+        
+        .todo-checkbox { width: 22px; height: 22px; margin-right: 1.2rem; cursor: pointer; border-radius: 50%; accent-color: var(--todo-completed); }
+        
+        .todo-content { flex-grow: 1; display: flex; flex-direction: column; }
+        .todo-content-text { font-size: 1.05rem; font-weight: 500; color: var(--todo-text); border: none; background: transparent; padding: 2px 4px; border-radius: 4px; }
+        .todo-content-text:focus { outline: 2px solid var(--todo-accent); background: #fff; }
+
+        .todo-meta { display: flex; align-items: center; gap: 1rem; margin-top: 0.3rem; font-size: 0.85rem; color: var(--todo-muted); }
+        .todo-date-input { border: none; background: transparent; color: var(--todo-muted); padding: 0; font-size: 0.85rem; cursor: pointer; width: 100px; }
+        .todo-date-input:focus { outline: none; color: var(--todo-accent); }
+
+        .todo-actions { display: flex; gap: 0.5rem; opacity: 0; transition: opacity 0.2s; }
+        .todo-item:hover .todo-actions { opacity: 1; }
+        .btn-action { padding: 4px 8px; border-radius: 6px; border: none; background: transparent; color: var(--todo-muted); cursor: pointer; }
+        .btn-action:hover { color: var(--todo-accent); background: #f0f3ff; }
+        .btn-delete:hover { color: #e74a3b; background: #fff5f5; }
+
+        /* Sub-tasks */
+        .sub-task-group { margin-left: 3rem; border-left: 2px solid #eaecf4; }
+        .sub-task-item { padding: 0.8rem 1.5rem; font-size: 0.95rem; }
+        .sub-task-add-form { padding: 0.8rem 1.5rem 1rem 1.5rem; }
+
+        /* Add Form */
+        .add-task-form { padding: 1.5rem; background: #fff; border-bottom: 1px solid var(--todo-border); }
+        .input-main { font-size: 1.1rem; padding: 0.8rem 1.2rem; border-radius: 8px; border: 1px solid var(--todo-border); width: 100%; transition: border-color 0.2s; }
+        .input-main:focus { border-color: var(--todo-accent); outline: none; }
+
+        /* Empty State */
+        .empty-state { padding: 4rem 2rem; text-align: center; color: var(--todo-muted); }
+        
+        /* Utility */
+        .badge-today { background: #fff3cd; color: #856404; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
+        .badge-overdue { background: #f8d7da; color: #721c24; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div layout:fragment="content" class="container mt-5">
-        <h2 class="mb-4">✅ 나의 할 일 목록</h2>
-
-        <!-- Add Root Todo Form -->
-        <div class="card mb-4 shadow-sm">
-            <div class="card-body">
-                <form method="post" th:action="@{/todo/add}" class="d-flex gap-2">
-                    <input type="text" name="content" class="form-control" placeholder="새로운 할 일을 입력하세요..." required>
-                    <input type="date" name="dueDate" class="form-control" style="width: 150px;" required id="todoDueDate">
-                    <button class="btn btn-primary" type="submit">추가</button>
-                </form>
+    <div layout:fragment="content" class="todo-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold m-0"><span class="me-2">🎯</span>나의 할 일</h2>
+            <div>
+                <a th:href="@{/todo/delete-completed}" class="btn btn-sm btn-outline-danger" onclick="return confirm('완료된 모든 할 일을 삭제하시겠습니까?')">
+                    완료 항목 일괄 삭제
+                </a>
             </div>
         </div>
 
-        <!-- Todo List -->
-        <div class="card shadow-sm">
-            <div class="list-group list-group-flush">
-                <div th:if="${todos == null || todos.empty}" class="list-group-item text-center text-muted p-4">
-                    할 일이 없습니다. 새 할 일을 추가해보세요!
+        <!-- Add New Root Task -->
+        <div class="todo-card mb-4">
+            <form method="post" th:action="@{/todo/add}" class="add-task-form">
+                <div class="d-flex gap-3">
+                    <input type="text" name="content" class="input-main" placeholder="새로운 할 일을 추가하세요 (Enter)" required autofocus>
+                    <input type="date" name="dueDate" class="form-control" style="width: 160px; height: 50px;" required id="mainDueDate">
+                    <button class="btn btn-primary px-4" type="submit">추가</button>
                 </div>
-                
+            </form>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="todo-card">
+            <div class="todo-controls">
+                <div class="d-flex gap-2">
+                    <button class="filter-btn active" onclick="filterTasks('all', this)">전체</button>
+                    <button class="filter-btn" onclick="filterTasks('active', this)">진행 중</button>
+                    <button class="filter-btn" onclick="filterTasks('completed', this)">완료</button>
+                </div>
+                <div class="text-muted small">
+                    <span id="activeCount">0</span>개의 할 일이 남았습니다
+                </div>
+            </div>
+
+            <!-- List Body -->
+            <div id="todoList" class="todo-list">
+                <div th:if="${todos == null || todos.empty}" class="empty-state">
+                    <div class="display-4 mb-3">🎐</div>
+                    <p>오늘 할 일을 등록하고 생산적인 하루를 시작하세요!</p>
+                </div>
+
                 <th:block th:each="todo : ${todos}">
-                    <!-- Render Parent Task -->
-                    <div class="list-group-item todo-item" th:classappend="${todo.completed} ? 'completed' : ''" th:data-id="${todo.id}">
-                        <input class="form-check-input" type="checkbox" th:checked="${todo.completed}" onchange="updateTodoStatus(this)">
-                        <div class="todo-content fw-bold" th:text="${todo.content}">할 일 내용</div>
-                        <div th:if="${todo.dueDate != null}" class="todo-due-date" th:text="${#dates.format(todo.dueDate, 'yyyy-MM-dd')}">
-                            2026-01-01
+                    <!-- Parent Task -->
+                    <div class="todo-item root-task" th:classappend="${todo.completed} ? 'completed' : ''" th:data-id="${todo.id}" th:data-completed="${todo.completed}">
+                        <input class="todo-checkbox" type="checkbox" th:checked="${todo.completed}" onchange="toggleTodo(this)">
+                        
+                        <div class="todo-content">
+                            <input type="text" class="todo-content-text" th:value="${todo.content}" onblur="updateTaskText(this)" onkeypress="if(event.keyCode==13) this.blur();">
+                            <div class="todo-meta">
+                                <span>📅 마감: </span>
+                                <input type="date" class="todo-date-input" th:value="${#dates.format(todo.dueDate, 'yyyy-MM-dd')}" onchange="updateTaskDate(this)">
+                                <span th:if="${todo.dueDate != null && !todo.completed}" th:class="${#dates.format(todo.dueDate, 'yyyy-MM-dd') == #dates.format(#dates.createNow(), 'yyyy-MM-dd')} ? 'badge-today' : ''"
+                                      th:text="${#dates.format(todo.dueDate, 'yyyy-MM-dd') == #dates.format(#dates.createNow(), 'yyyy-MM-dd')} ? '오늘까지' : ''">
+                                </span>
+                            </div>
                         </div>
+
                         <div class="todo-actions">
-                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" th:data-bs-target="'#subTaskForm-' + ${todo.id}">+</button>
-                            <a th:href="@{/todo/delete/{id}(id=${todo.id})}" class="btn btn-sm btn-outline-danger">삭제</a>
-                        </div>
-                    </div>
-                    
-                    <!-- Sub-task Add Form -->
-                    <div class="collapse" th:id="'subTaskForm-' + ${todo.id}">
-                         <div class="sub-task-form pb-3">
-                            <form method="post" th:action="@{/todo/add}" class="d-flex gap-2">
-                                <input type="hidden" name="parentId" th:value="${todo.id}">
-                                <input type="text" name="content" class="form-control form-control-sm" placeholder="세부 할 일 추가..." required>
-                                <input type="date" name="dueDate" class="form-control form-control-sm" style="width: 130px;" required>
-                                <button class="btn btn-sm btn-success" type="submit">추가</button>
-                            </form>
+                            <button class="btn-action" title="하위 작업 추가" onclick="showSubForm(this)">
+                                <i class="bi bi-plus-square"></i> Sub
+                            </button>
+                            <a th:href="@{/todo/delete/{id}(id=${todo.id})}" class="btn-action btn-delete" title="삭제" onclick="return confirm('이 작업과 모든 하위 작업이 삭제됩니다.')">
+                                <i class="bi bi-trash"></i>
+                            </a>
                         </div>
                     </div>
 
-                    <!-- Render Sub-tasks -->
-                    <div th:if="${todo.subTasks != null && !todo.subTasks.empty}" class="sub-task-list">
-                        <div th:each="subTask : ${todo.subTasks}" class="list-group-item todo-item" th:classappend="${subTask.completed} ? 'completed' : ''" th:data-id="${subTask.id}">
-                            <input class="form-check-input" type="checkbox" th:checked="${subTask.completed}" onchange="updateTodoStatus(this)">
-                            <div class="todo-content" th:text="${subTask.content}">세부 할 일 내용</div>
-                            <div th:if="${subTask.dueDate != null}" class="todo-due-date" th:text="${#dates.format(subTask.dueDate, 'yyyy-MM-dd')}">
-                                2026-01-01
+                    <!-- Sub-tasks Section -->
+                    <div class="sub-task-group" th:id="'subGroup-' + ${todo.id}">
+                        <!-- Sub-tasks List -->
+                        <div th:each="sub : ${todo.subTasks}" class="todo-item sub-task-item" th:classappend="${sub.completed} ? 'completed' : ''" th:data-id="${sub.id}" th:data-completed="${sub.completed}">
+                            <input class="todo-checkbox" type="checkbox" th:checked="${sub.completed}" onchange="toggleTodo(this)">
+                            
+                            <div class="todo-content">
+                                <input type="text" class="todo-content-text" th:value="${sub.content}" onblur="updateTaskText(this)" onkeypress="if(event.keyCode==13) this.blur();">
+                                <div class="todo-meta">
+                                    <input type="date" class="todo-date-input" th:value="${#dates.format(sub.dueDate, 'yyyy-MM-dd')}" onchange="updateTaskDate(this)">
+                                </div>
                             </div>
+
                             <div class="todo-actions">
-                                 <a th:href="@{/todo/delete/{id}(id=${subTask.id})}" class="btn btn-sm btn-outline-danger">삭제</a>
+                                <a th:href="@{/todo/delete/{id}(id=${sub.id})}" class="btn-action btn-delete" title="삭제">
+                                    <i class="bi bi-trash"></i>
+                                </a>
                             </div>
+                        </div>
+
+                        <!-- Add Sub-task Inline Form (Hidden by default) -->
+                        <div class="sub-task-add-form d-none" th:id="'subForm-' + ${todo.id}">
+                            <form method="post" th:action="@{/todo/add}" class="d-flex gap-2">
+                                <input type="hidden" name="parentId" th:value="${todo.id}">
+                                <input type="text" name="content" class="form-control form-control-sm" placeholder="하위 작업 내용..." required>
+                                <input type="date" name="dueDate" class="form-control form-control-sm" style="width: 140px;" th:value="${#dates.format(todo.dueDate, 'yyyy-MM-dd')}" required>
+                                <button class="btn btn-sm btn-primary" type="submit">추가</button>
+                                <button class="btn btn-sm btn-light" type="button" onclick="hideSubForm(this)">취소</button>
+                            </form>
                         </div>
                     </div>
                 </th:block>
@@ -82,47 +167,110 @@
 
         <script th:inline="javascript">
             document.addEventListener('DOMContentLoaded', function() {
-                const today = new Date();
-                const yyyy = today.getFullYear();
-                const mm = String(today.getMonth() + 1).padStart(2, '0');
-                const dd = String(today.getDate()).padStart(2, '0');
-                const todayString = `${yyyy}-${mm}-${dd}`;
-
-                const dueDateInput = document.getElementById('todoDueDate');
-                if (dueDateInput) {
-                    dueDateInput.setAttribute('min', todayString);
-                }
+                updateActiveCount();
                 
-                document.querySelectorAll('input[type="date"][name="dueDate"]').forEach(function(el) {
-                    el.setAttribute('min', todayString);
+                // Set default date to today
+                const today = new Date().toISOString().split('T')[0];
+                const dateInputs = document.querySelectorAll('input[type="date"]');
+                dateInputs.forEach(input => {
+                    if (!input.value) input.value = today;
+                    // input.setAttribute('min', today); // Allow past due for editing existing
                 });
+                
+                const mainDate = document.getElementById('mainDueDate');
+                if (mainDate && !mainDate.value) mainDate.value = today;
             });
 
-            function updateTodoStatus(checkbox) {
-                const todoItem = checkbox.closest('.todo-item');
-                const todoId = todoItem.dataset.id;
-                const isCompleted = checkbox.checked;
-                const contextPath = '';
+            function updateActiveCount() {
+                const count = document.querySelectorAll('.todo-item[data-completed="false"]').length;
+                document.getElementById('activeCount').innerText = count;
+            }
 
-                fetch(contextPath + '/todo/update', {
+            function filterTasks(type, btn) {
+                // Update buttons
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Filter items
+                const items = document.querySelectorAll('.todo-item');
+                items.forEach(item => {
+                    const completed = item.dataset.completed === 'true';
+                    if (type === 'all') {
+                        item.classList.remove('d-none');
+                    } else if (type === 'active') {
+                        item.classList.toggle('d-none', completed);
+                    } else if (type === 'completed') {
+                        item.classList.toggle('d-none', !completed);
+                    }
+                });
+            }
+
+            function toggleTodo(checkbox) {
+                const item = checkbox.closest('.todo-item');
+                const id = item.dataset.id;
+                const completed = checkbox.checked;
+
+                sendUpdate(id, { completed: completed }, () => {
+                    item.dataset.completed = completed;
+                    item.classList.toggle('completed', completed);
+                    updateActiveCount();
+                }, () => {
+                    checkbox.checked = !completed;
+                });
+            }
+
+            function updateTaskText(input) {
+                const item = input.closest('.todo-item');
+                const id = item.dataset.id;
+                const text = input.value;
+                if (!text.trim()) return;
+
+                sendUpdate(id, { content: text }, null, () => {
+                    // Revert on error if we had original value
+                });
+            }
+
+            function updateTaskDate(input) {
+                const item = input.closest('.todo-item');
+                const id = item.dataset.id;
+                const date = input.value;
+
+                sendUpdate(id, { dueDate: date }, null, null);
+            }
+
+            function sendUpdate(id, data, onSuccess, onError) {
+                const payload = { id: parseInt(id), ...data };
+                
+                fetch('/todo/update', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: todoId, completed: isCompleted })
+                    body: JSON.stringify(payload)
                 })
-                .then(response => response.text())
-                .then(data => {
-                    if (data === 'success') {
-                        todoItem.classList.toggle('completed', isCompleted);
+                .then(res => res.text())
+                .then(result => {
+                    if (result === 'success') {
+                        if (onSuccess) onSuccess();
                     } else {
-                        alert('상태 업데이트에 실패했습니다.');
-                        checkbox.checked = !isCompleted;
+                        if (onError) onError();
+                        alert('업데이트 중 오류가 발생했습니다.');
                     }
                 })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('오류가 발생했습니다.');
-                    checkbox.checked = !isCompleted;
+                .catch(err => {
+                    if (onError) onError();
+                    console.error(err);
                 });
+            }
+
+            function showSubForm(btn) {
+                const item = btn.closest('.todo-item');
+                const subForm = document.getElementById('subForm-' + item.dataset.id);
+                subForm.classList.remove('d-none');
+                subForm.querySelector('input[name="content"]').focus();
+            }
+
+            function hideSubForm(btn) {
+                const formGroup = btn.closest('.sub-task-add-form');
+                formGroup.classList.add('d-none');
             }
         </script>
     </div>

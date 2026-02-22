@@ -15,4 +15,6 @@ public interface TodoService {
     void update(TodoDTO todo);
 
     void deleteById(int id);
+
+    void deleteCompletedByMemberNo(int memberNo);
 }

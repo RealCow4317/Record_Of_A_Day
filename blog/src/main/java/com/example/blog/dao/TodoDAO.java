@@ -16,4 +16,6 @@ public interface TodoDAO {
     void update(TodoDTO todo);
 
     void deleteById(@Param("id") int id);
+
+    void deleteCompletedByMemberNo(@Param("memberNo") int memberNo);
 }

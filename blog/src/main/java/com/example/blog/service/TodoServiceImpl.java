@@ -59,4 +59,9 @@ public class TodoServiceImpl implements TodoService {
     public void deleteById(int id) {
         todoDAO.deleteById(id);
     }
+
+    @Override
+    public void deleteCompletedByMemberNo(int memberNo) {
+        todoDAO.deleteCompletedByMemberNo(memberNo);
+    }
 }
