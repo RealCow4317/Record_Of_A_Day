@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>페이지를 찾을 수 없습니다 - Record Of A Day</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .error-container {
+            height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .error-code {
+            font-size: 8rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #6913CC 0%, #2B6DF8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+        .error-message {
+            font-size: 1.5rem;
+            color: var(--text-color);
+            margin-bottom: 2rem;
+        }
+        .back-btn {
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            transition: all 0.3s;
+        }
+        .back-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(105, 19, 204, 0.3);
+        }
+    </style>
+</head>
+<body data-bs-theme="light">
+    <!-- Header Fragment -->
+    <div th:replace="~{common/header :: header}"></div>
+    
+    <!-- Sidebar Fragment -->
+    <div th:replace="~{common/sidebar :: sidebar}"></div>
+
+    <div class="container error-container">
+        <div class="row">
+            <div class="col-12">
+                <div class="error-code">404</div>
+                <h2 class="error-message">요청하신 페이지를 찾을 수 없습니다.</h2>
+                <p class="text-muted mb-4">입력하신 주소가 정확한지 다시 한번 확인해 주세요.</p>
+                <a th:href="@{/}" class="btn btn-primary back-btn">
+                    <i class="bi bi-house-door me-2"></i> 홈으로 돌아가기
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 다크모드 설정 유지 (index.html 등에서 사용하는 로직과 동일하게 적용 권장)
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.body.setAttribute('data-bs-theme', savedTheme);
+    </script>
+</body>
+</html>
