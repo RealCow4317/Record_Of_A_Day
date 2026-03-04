@@ -1,0 +1,174 @@
+/* Calendar General Styles */
+#calendar-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.fc-daygrid-day {
+    position: relative;
+    min-height: 120px;
+    overflow: hidden;
+}
+
+/* Diary Background Image Styles */
+.fc-daygrid-day.diary-with-image {
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    background-clip: padding-box !important;
+}
+
+.fc-daygrid-day.diary-with-image .fc-daygrid-day-frame {
+    position: relative;
+    z-index: 1;
+    background-color: transparent !important;
+}
+
+/* Date Number Circle */
+.fc-daygrid-day-frame .fc-daygrid-day-top {
+    position: relative;
+    z-index: 3;
+    background-color: rgba(255, 255, 255, 0.8);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    white-space: nowrap;
+}
+
+.fc-daygrid-day-number {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 0.9rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Default Event Styling (Diary Text etc.) */
+.fc-daygrid-event {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 0.85em;
+    z-index: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+/* Hide Diary Text when Image exists */
+.fc-daygrid-day.diary-with-image .fc-daygrid-event:not(.todo-event):not(.holiday-event) {
+    display: none !important;
+}
+
+.fc-daygrid-event-dot {
+    display: none;
+}
+
+.fc-daygrid-day.fc-day-today {
+    border: 2px solid #007bff;
+    box-sizing: border-box;
+}
+
+/* Sunday/Saturday Colors */
+.fc-col-header-cell.fc-day-sun a,
+.fc-daygrid-day.fc-day-sun .fc-daygrid-day-number {
+    color: #dc3545 !important;
+}
+
+.fc-col-header-cell.fc-day-sat a,
+.fc-daygrid-day.fc-day-sat .fc-daygrid-day-number {
+    color: #0d6efd !important;
+}
+
+/* TODO Event Styling */
+.todo-event {
+    position: relative !important;
+    z-index: 5 !important;
+    font-size: 0.75rem !important;
+    padding: 2px 6px !important;
+    margin: 1px 4px !important;
+    border-radius: 6px !important;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    display: block !important;
+}
+
+.todo-event:not(.completed) {
+    background-color: rgba(255, 243, 205, 0.85) !important;
+    backdrop-filter: blur(2px);
+    color: #856404 !important;
+}
+
+.todo-event.completed {
+    background-color: rgba(233, 236, 239, 0.85) !important;
+    backdrop-filter: blur(2px);
+    color: #6c757d !important;
+    text-decoration: line-through;
+}
+
+/* Transparent TODO on Image-days */
+.fc-daygrid-day.diary-with-image .todo-event {
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    backdrop-filter: blur(1px);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    text-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
+}
+
+/* Holiday Styling */
+.holiday-event {
+    position: relative !important;
+    bottom: auto !important;
+    margin-top: 0 !important;
+    font-weight: bold;
+    font-size: 0.8rem;
+    background-color: transparent !important;
+    border: none !important;
+    color: #dc3545 !important;
+    width: 100%;
+    display: block;
+    padding-left: 8px;
+    z-index: 4;
+}
+
+/* --- Mobile Optimization --- */
+@media (max-width: 768px) {
+    .fc-daygrid-day {
+        min-height: 80px;
+    }
+
+    .fc-daygrid-day-number {
+        font-size: 0.7rem !important;
+    }
+    
+    .fc-daygrid-day-frame .fc-daygrid-day-top {
+        width: 22px !important;
+        height: 22px !important;
+        margin: 2px !important;
+    }
+
+    .todo-event {
+        font-size: 0.6rem !important;
+        padding: 1px 3px !important;
+        margin: 1px 2px !important;
+    }
+
+    .holiday-event {
+        font-size: 0.6rem !important;
+        padding-left: 4px;
+    }
+}

@@ -1,10 +1,7 @@
-const CACHE_NAME = 'rod-blog-cache-v1';
+const CACHE_NAME = 'rod-blog-cache-v3';
 const urlsToCache = [
-  '/',
   '/css/style.css',
-  '/css/theme_transition.css',
   '/js/script.js',
-  '/js/theme_toggle.js',
   '/js/notification.js',
   '/img/icons/icon-192x192.png',
   '/img/icons/icon-512x512.png',

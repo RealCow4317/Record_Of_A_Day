@@ -172,3 +172,90 @@ a:hover {
     color: white; 
     text-align: center; 
 }
+
+/* Mobile Responsive Typography & Layout */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px; /* 전체 기본 폰트 축소 */
+        line-height: 1.5;
+    }
+
+    /* Titles */
+    h1, .display-5 { font-size: 1.6rem !important; margin-bottom: 1rem !important; }
+    h2 { font-size: 1.4rem !important; }
+    h3 { font-size: 1.2rem !important; }
+    h4 { font-size: 1.1rem !important; }
+    
+    .lead { font-size: 0.95rem !important; }
+
+    /* Tables (Board List etc.) */
+    .table {
+        font-size: 0.85rem !important;
+    }
+    .table th, .table td {
+        padding: 8px 4px !important; /* 모바일에서 표 간격 좁게 */
+    }
+    
+    /* Hide less important columns on mobile if needed */
+    .mobile-hide {
+        display: none !important;
+    }
+
+    /* ToDo List Optimization */
+    .todo-item {
+        padding: 10px !important;
+        font-size: 0.9rem !important;
+    }
+    .todo-content {
+        max-width: 70%; /* 텍스트가 너무 길어지지 않게 */
+    }
+
+    /* Buttons & Forms */
+    .btn {
+        padding: 6px 12px !important;
+        font-size: 0.85rem !important;
+    }
+    .form-control, .form-select {
+        font-size: 0.9rem !important;
+        padding: 8px !important;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        padding: 40px 0 !important;
+    }
+
+    /* Card & Spacing */
+    .container {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+    .card {
+        padding: 12px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    /* Sidebar text */
+    .nav-link {
+        font-size: 0.95rem !important;
+        padding: 10px 15px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar-brand img {
+        height: 28px !important;
+    }
+    
+    .navbar-nav.mx-auto {
+        gap: 0.8rem !important;
+    }
+
+    /* 더 좁은 화면에서의 게시판 처리 */
+    .board-title {
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}

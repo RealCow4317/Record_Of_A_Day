@@ -14,7 +14,7 @@
                 <li class="nav-item"><a class="nav-link" th:href="@{/calendar/view}">캘린더(Calendar)</a></li>
                 <li class="nav-item"><a class="nav-link" th:href="@{/contact}">Contact</a></li>
 
-                <th:block th:if="${session.loginUser != null}">
+                <th:block th:if="${session != null and session.loginUser != null}">
                     <li class="nav-item"><a class="nav-link" th:href="@{/member/profile}">내 정보</a></li>
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/member/logout}">
@@ -22,7 +22,7 @@
                         </a>
                     </li>
                 </th:block>
-                <th:block th:unless="${session.loginUser != null}">
+                <th:block th:unless="${session != null and session.loginUser != null}">
                     <li class="nav-item"><a class="nav-link" th:href="@{/member/login}">로그인</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/member/join}">회원가입</a></li>
                 </th:block>
