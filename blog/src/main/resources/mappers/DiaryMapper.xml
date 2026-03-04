@@ -23,7 +23,7 @@
         SELECT id, member_no, diary_date, content, image_path, thumbnail_path
         FROM diary
         WHERE member_no = #{memberNo}
-          AND diary_date BETWEEN #{startDate} AND #{endDate}
+          AND diary_date BETWEEN #{start} AND #{end}
     </select>
 
     <select id="findByMemberNoAndDiaryDate" resultMap="diaryResultMap">

@@ -9,6 +9,8 @@ public interface TodoDAO {
 
     List<TodoDTO> findByMemberNo(@Param("memberNo") int memberNo);
 
+    List<TodoDTO> findByMemberNoAndDateRange(@Param("memberNo") int memberNo, @Param("start") String start, @Param("end") String end);
+
     TodoDTO findById(@Param("id") int id);
 
     void save(TodoDTO todo);

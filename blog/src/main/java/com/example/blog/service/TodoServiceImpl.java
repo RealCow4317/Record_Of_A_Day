@@ -41,6 +41,11 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
+    public List<TodoDTO> findByMemberNoAndDateRange(int memberNo, String start, String end) {
+        return todoDAO.findByMemberNoAndDateRange(memberNo, start, end);
+    }
+
+    @Override
     public TodoDTO findById(int id) {
         return todoDAO.findById(id);
     }

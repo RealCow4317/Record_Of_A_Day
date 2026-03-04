@@ -26,6 +26,14 @@
             created_at ASC;
     </select>
 
+    <select id="findByMemberNoAndDateRange" resultMap="todoResultMap">
+        SELECT id, member_no, parent_id, content, completed, created_at, due_date
+        FROM todo
+        WHERE member_no = #{memberNo}
+          AND due_date BETWEEN #{start} AND #{end}
+        ORDER BY due_date ASC, created_at ASC;
+    </select>
+
     <select id="findById" resultMap="todoResultMap">
         SELECT id, member_no, parent_id, content, completed, created_at, due_date
         FROM todo

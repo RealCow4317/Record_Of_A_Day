@@ -8,6 +8,8 @@ public interface TodoService {
 
     List<TodoDTO> findByMemberNo(int memberNo);
 
+    List<TodoDTO> findByMemberNoAndDateRange(int memberNo, String start, String end);
+
     TodoDTO findById(int id);
 
     void save(TodoDTO todo);

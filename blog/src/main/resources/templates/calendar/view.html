@@ -21,13 +21,15 @@
             overflow: hidden;
         }
         .fc-daygrid-day.diary-with-image {
-            background-size: cover;
-            background-position: center center;
-            background-repeat: no-repeat;
+            background-size: cover !important;
+            background-position: center center !important;
+            background-repeat: no-repeat !important;
+            background-clip: padding-box !important;
         }
         .fc-daygrid-day.diary-with-image .fc-daygrid-day-frame {
             position: relative;
             z-index: 1;
+            background-color: transparent !important; /* 배경 이미지를 가리지 않도록 투명화 */
         }
         .fc-daygrid-day-frame .fc-daygrid-day-top {
             position: relative;
@@ -106,6 +108,28 @@
     width: 100%;
     display: block;
     padding-left: 8px;
+}
+
+/* TODO 이벤트 스타일 추가 */
+.todo-event {
+    position: relative !important;
+    font-size: 0.75rem !important;
+    padding: 1px 4px !important;
+    border-radius: 4px !important;
+    margin-bottom: 1px !important;
+    cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.1) !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* 다이어리 이미지가 있는 날짜에도 TODO 텍스트는 보이도록 수정 */
+.fc-daygrid-day.diary-with-image .fc-daygrid-event-harness {
+    display: block !important;
+}
+.fc-daygrid-day.diary-with-image .todo-event {
+    background-color: rgba(255, 243, 205, 0.9) !important;
+    color: #856404 !important;
+    z-index: 5;
 }
     </style>
 </head>
@@ -243,6 +267,13 @@
                             alert('미래 날짜에는 일기를 작성할 수 없습니다.');
                         }
                     },
+                    eventClick: function(info) {
+                        // TODO 이벤트인 경우 할 일 목록 페이지로 이동
+                        if (info.event.extendedProps.type === 'todo') {
+                            window.location.href = contextPath + '/todo/list';
+                        }
+                        // 공휴일이나 다이어리 텍스트 클릭 시에는 특별한 동작 없음 (필요시 추가)
+                    },
                     eventSources: [
                         {
                             url: contextPath + '/calendar/events',
@@ -273,22 +304,42 @@
                         return { html: '' };
                     },
                     eventDidMount: function(info) {
-                        if (info.event.extendedProps && info.event.extendedProps.imagePath) {
+                        const props = info.event.extendedProps;
+                        
+                        // 다이어리 이벤트(이미지 경로가 있는 경우) 처리
+                        if (props && props.imagePath) {
+                            console.log('Diary Image Found:', props.imagePath); // 디버깅용
                             const dayEl = info.el.closest('.fc-daygrid-day');
-                            const imagePath = contextPath + info.event.extendedProps.imagePath;
+                            const imagePath = contextPath + props.imagePath;
 
                             if (dayEl) {
-                                dayEl.style.backgroundImage = 'url(' + imagePath + ')';
+                                // URL에 따옴표 추가 (경로에 특수문자나 공백이 있을 경우 대비)
+                                dayEl.style.backgroundImage = 'url("' + imagePath + '")';
                                 dayEl.style.backgroundSize = 'cover';
                                 dayEl.style.backgroundPosition = 'center';
                                 dayEl.style.backgroundRepeat = 'no-repeat';
                                 dayEl.classList.add('diary-with-image');
+                                
+                                // 내부 프레임 배경 제거 (이미지 노출을 위해)
+                                const frame = dayEl.querySelector('.fc-daygrid-day-frame');
+                                if (frame) {
+                                    frame.style.backgroundColor = 'transparent';
+                                }
+                                
+                                // 날짜 숫자 배경을 반투명하게 하여 가독성 높임
+                                const dayTop = dayEl.querySelector('.fc-daygrid-day-top');
+                                if (dayTop) {
+                                    dayTop.style.backgroundColor = 'rgba(255, 255, 255, 0.6)';
+                                }
                             }
+                            
+                            // 다이어리 이벤트 자체(텍스트)는 숨김
                             if (info.el) {
                                 info.el.style.display = 'none';
                             }
                         }
                         
+                        // 오늘 날짜 표시 유지
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
                         const eventDate = info.event.start;
