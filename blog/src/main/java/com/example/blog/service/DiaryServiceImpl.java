@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.io.File;
 import java.sql.Date;
 import java.util.List;
@@ -35,23 +37,24 @@ public class DiaryServiceImpl implements DiaryService {
             String thumbnailFilename = "thumb_" + uuid + "_" + originalFilename;
 
             // Ensure the upload directory exists
-            File uploadDirFile = new File(uploadDir);
+            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+            File uploadDirFile = uploadPath.toFile();
             if (!uploadDirFile.exists()) {
                 uploadDirFile.mkdirs();
             }
 
-            File dest = new File(uploadDir + storedFilename);
-            File thumbDest = new File(uploadDir + thumbnailFilename);
+            Path destPath = uploadPath.resolve(storedFilename);
+            Path thumbDestPath = uploadPath.resolve(thumbnailFilename);
 
             // Save original image
-            imageFile.transferTo(dest);
+            imageFile.transferTo(destPath);
             imagePath = "/upload/" + storedFilename;
 
             // Generate thumbnail (300x300)
             try {
-                Thumbnails.of(dest)
+                Thumbnails.of(destPath.toFile())
                         .size(300, 300)
-                        .toFile(thumbDest);
+                        .toFile(thumbDestPath.toFile());
                 thumbnailPath = "/upload/" + thumbnailFilename;
             } catch (Exception e) {
                 // If thumbnail generation fails, fallback to original image or handle error
