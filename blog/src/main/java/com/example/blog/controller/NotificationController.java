@@ -52,7 +52,6 @@ public class NotificationController {
             return result;
         }
 
-        // 특정 사용자의 ID를 포함한 공통 경로로 전송
         messagingTemplate.convertAndSend("/topic/user-notif/" + userId, message);
 
         result.put("success", true);

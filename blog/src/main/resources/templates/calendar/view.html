@@ -4,7 +4,6 @@
       layout:decorate="~{layout/default}">
 <head>
     <title>캘린더</title>
-    <!-- FullCalendar CSS -->
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
     <style>
         body {
@@ -22,8 +21,8 @@
             overflow: hidden;
         }
         .fc-daygrid-day.diary-with-image {
-            background-size: cover; /* 이미지를 꽉 채우도록 다시 변경 */
-            background-position: center center; /* 중앙 정렬 */
+            background-size: cover;
+            background-position: center center;
             background-repeat: no-repeat;
         }
         .fc-daygrid-day.diary-with-image .fc-daygrid-day-frame {
@@ -34,7 +33,7 @@
             position: relative;
             z-index: 3;
             background-color: rgba(255, 255, 255, 0.8);
-            width: 30px; /* 30px에서 42px로 늘려 "11일"이 한 줄에 들어가도록 수정 */
+            width: 30px;
             height: 30px;
             border-radius: 50%;
             margin: 5px;
@@ -43,7 +42,7 @@
             align-items: center;
             justify-content: center;
             padding: 0;
-            white-space: nowrap; /* 줄바꿈 방지 */
+            white-space: nowrap;
         }
         .fc-daygrid-day-number {
             display: block;
@@ -61,7 +60,6 @@
             left: 0;
             right: 0;
             width: 100%;
-            /*padding: 4px;*/
             background-color: rgba(0, 0, 0, 0.5);
             color: white;
             font-size: 0.85em;
@@ -82,8 +80,6 @@
             box-sizing: border-box;
         }
 
-        /* 요일별 색상 지정 (토요일: 파란색, 일요일: 빨간색) */
-        /* 헤더 (일, 월, 화...) */
         .fc-col-header-cell.fc-day-sun a {
             color: #dc3545 !important; /* Red */
         }
@@ -97,6 +93,20 @@
         .fc-daygrid-day.fc-day-sat .fc-daygrid-day-number {
             color: #0d6efd !important;
         }
+
+.holiday-event {
+    position: relative !important;
+    bottom: auto !important;
+    margin-top: 0 !important;
+    font-weight: bold;
+    font-size: 0.8rem;
+    background-color: transparent !important;
+    border: none !important;
+    color: #dc3545 !important;
+    width: 100%;
+    display: block;
+    padding-left: 8px;
+}
     </style>
 </head>
 <body>
@@ -105,7 +115,6 @@
             <div id='calendar'></div>
         </div>
 
-        <!-- Diary Entry Modal -->
         <div class="modal fade" id="diaryModal" tabindex="-1" aria-labelledby="diaryModalLabel">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -139,16 +148,14 @@
             </div>
         </div>
 
-        <!-- FullCalendar JS -->
         <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
         <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/ko.js'></script>
 
         <script th:inline="javascript">
             document.addEventListener('DOMContentLoaded', function() {
                 const contextPath = '';
-                const memberNo = /*[[${session.loginUser.memberNo}]]*/ 0;
-                
-                // Form validation logic
+                const memberNo = 0;
+
                 const saveBtn = document.getElementById('saveDiaryBtn');
                 const diaryForm = document.getElementById('diaryForm');
                 
@@ -175,7 +182,6 @@
                     } else if (!hasContent && !hasImage) {
                          alert('내용이나 이미지를 입력해주세요.');
                     } else {
-                        // Both content and image exist
                         diaryForm.submit();
                     }
                 });

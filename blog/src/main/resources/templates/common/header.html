@@ -5,13 +5,10 @@
 <body>
     <nav th:fragment="header" class="navbar fixed-top navbar-expand-lg border-bottom shadow-sm bg-body">
         <div class="container-fluid">
-            <!-- Left-aligned items (Hamburger Menu Button and Logo) -->
             <div class="d-flex align-items-center">
-                <!-- Offcanvas Menu Button -->
                 <button class="btn btn-outline-secondary me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sideMenu" aria-controls="sideMenu">
                     ☰
                 </button>
-                <!-- Logo -->
                 <a class="navbar-brand" th:href="@{/}">
                     <img th:src="@{/img/logo.png}" alt="REALCOW Logo" style="height: 36px;">
                 </a>
@@ -36,7 +33,6 @@
                 </li>
             </ul>
 
-            <!-- Right-aligned items (Theme Dropdown) -->
             <div class="d-flex align-items-center">
                 <button id="install-button" class="btn btn-primary me-2" style="display: none;">
                     <i class="bi bi-download"></i> 앱 설치

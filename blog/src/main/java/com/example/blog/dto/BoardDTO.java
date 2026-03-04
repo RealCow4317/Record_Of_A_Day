@@ -63,7 +63,6 @@ public class BoardDTO {
 
     public String getContentSummary() {
         if (this.content == null) return "";
-        // Jsoup을 사용하여 모든 HTML 태그를 제거하고 텍스트만 추출
         String plainText = org.jsoup.Jsoup.parse(this.content).text();
         return plainText;
     }

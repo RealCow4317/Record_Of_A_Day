@@ -56,8 +56,7 @@ public class TodoController {
         if (loginUser == null || existingTodo == null || existingTodo.getMemberNo() != loginUser.getMemberNo()) {
             return "error";
         }
-        
-        // Update all editable fields
+
         if (todo.getContent() != null) {
             existingTodo.setContent(todo.getContent());
         }
@@ -86,7 +85,6 @@ public class TodoController {
         TodoDTO todo = todoService.findById(id);
 
         if (loginUser == null || todo == null || todo.getMemberNo() != loginUser.getMemberNo()) {
-            // Or handle with an error message
             return "redirect:/todo/list";
         }
 
