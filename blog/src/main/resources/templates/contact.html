@@ -3,7 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/default}">
 <head>
-    <title>Contact - RealCowLabs</title>
+    <title>Contact</title>
     <style>
         .contact-header {
             background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
@@ -56,7 +56,7 @@
         <div class="contact-header">
             <div class="container">
                 <h1 class="display-5 fw-bold mb-2">Contact & Information</h1>
-                <p class="lead">RealCowLabs와 Record Of A Day에 대해 소개합니다.</p>
+                <p class="lead" th:text="${siteName} + '에 대해 소개합니다.'">사이트에 대해 소개합니다.</p>
             </div>
         </div>
 
@@ -74,7 +74,7 @@
                             복잡한 기능보다는 사용자에게 꼭 필요한 본질적인 가치를 전달하고자 노력합니다.
                         </p>
                         <p class="text-muted">
-                            <strong>Record Of A Day</strong>는 이러한 고민 끝에 탄생한 개인 프로젝트로, 
+                            <strong th:text="${siteName}">사이트 이름</strong>는 이러한 고민 끝에 탄생한 개인 프로젝트로, 
                             누구나 쉽게 자신의 하루를 기록하고 돌아볼 수 있는 공간을 지향합니다.
                         </p>
                     </div>
@@ -88,7 +88,7 @@
                         </div>
                         <h3 class="section-title">Description</h3>
                         <p class="text-muted">
-                            <strong>Record Of A Day</strong>는 단순한 블로그 이상의 기능을 제공합니다.
+                            <strong th:text="${siteName}">사이트 이름</strong>는 단순한 블로그 이상의 기능을 제공합니다.
                         </p>
                         <ul class="list-unstyled text-muted small">
                             <li class="mb-2"><i class="bi bi-check2-circle text-primary me-2"></i><strong>일상 기록:</strong> 하루 한 장의 사진과 글로 채우는 데일리 다이어리</li>
