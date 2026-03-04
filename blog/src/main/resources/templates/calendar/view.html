@@ -71,66 +71,63 @@
             white-space: nowrap;
             box-sizing: border-box;
         }
-        .fc-daygrid-day.diary-with-image .fc-daygrid-event {
+        /* 다이어리 이미지가 있을 때 기본 이벤트(일기 제목 등)만 숨기고 나머지는 노출 */
+        .fc-daygrid-day.diary-with-image .fc-daygrid-event:not(.todo-event):not(.holiday-event) {
             display: none !important;
         }
-        .fc-daygrid-event-dot {
-            display: none;
+
+        /* TODO 이벤트 스타일 대폭 강화 (사진 위에서도 잘 보이도록) */
+        .todo-event {
+            position: relative !important;
+            z-index: 5 !important;
+            font-size: 0.75rem !important;
+            padding: 2px 6px !important;
+            margin: 1px 4px !important;
+            border-radius: 6px !important;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            display: block !important; /* 무조건 노출 */
         }
-        .fc-daygrid-day.fc-day-today {
-            border: 2px solid #007bff;
-            box-sizing: border-box;
+        
+        /* 미완료 할 일: 노란색 계열 반투명 */
+        .todo-event:not(.completed) {
+            background-color: rgba(255, 243, 205, 0.85) !important;
+            backdrop-filter: blur(2px);
+            color: #856404 !important;
         }
 
-        .fc-col-header-cell.fc-day-sun a {
-            color: #dc3545 !important; /* Red */
+        /* 완료된 할 일: 회색 계열 반투명 */
+        .todo-event.completed {
+            background-color: rgba(233, 236, 239, 0.85) !important;
+            backdrop-filter: blur(2px);
+            color: #6c757d !important;
+            text-decoration: line-through;
         }
-        .fc-col-header-cell.fc-day-sat a {
-            color: #0d6efd !important; /* Blue */
+
+        /* 사진이 있는 칸의 TODO는 훨씬 더 투명하게 (사진 보호) */
+        .fc-daygrid-day.diary-with-image .todo-event {
+            background-color: rgba(255, 255, 255, 0.4) !important; /* 0.9 -> 0.4로 투명도 강화 */
+            backdrop-filter: blur(1px); /* 살짝의 블러로 글자 가독성 유지 */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            text-shadow: 0 0 2px rgba(255, 255, 255, 0.8); /* 글자 주변에 밝은 광택을 주어 사진 위에서 잘 보이게 함 */
         }
-        /* 날짜 숫자 */
-        .fc-daygrid-day.fc-day-sun .fc-daygrid-day-number {
+
+        /* 공휴일 텍스트 스타일 재설정 */
+        .holiday-event {
+            position: relative !important;
+            bottom: auto !important;
+            margin-top: 0 !important; /* 5px -> 0으로 위로 최대한 올림 */
+            font-weight: bold;
+            font-size: 0.8rem;
+            background-color: transparent !important;
+            border: none !important;
             color: #dc3545 !important;
+            width: 100%;
+            display: block;
+            padding-left: 8px;
+            z-index: 4;
         }
-        .fc-daygrid-day.fc-day-sat .fc-daygrid-day-number {
-            color: #0d6efd !important;
-        }
-
-.holiday-event {
-    position: relative !important;
-    bottom: auto !important;
-    margin-top: 0 !important;
-    font-weight: bold;
-    font-size: 0.8rem;
-    background-color: transparent !important;
-    border: none !important;
-    color: #dc3545 !important;
-    width: 100%;
-    display: block;
-    padding-left: 8px;
-}
-
-/* TODO 이벤트 스타일 추가 */
-.todo-event {
-    position: relative !important;
-    font-size: 0.75rem !important;
-    padding: 1px 4px !important;
-    border-radius: 4px !important;
-    margin-bottom: 1px !important;
-    cursor: pointer;
-    border: 1px solid rgba(0,0,0,0.1) !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-/* 다이어리 이미지가 있는 날짜에도 TODO 텍스트는 보이도록 수정 */
-.fc-daygrid-day.diary-with-image .fc-daygrid-event-harness {
-    display: block !important;
-}
-.fc-daygrid-day.diary-with-image .todo-event {
-    background-color: rgba(255, 243, 205, 0.9) !important;
-    color: #856404 !important;
-    z-index: 5;
-}
     </style>
 </head>
 <body>
