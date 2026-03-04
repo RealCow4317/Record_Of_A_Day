@@ -10,6 +10,9 @@
             <ul class="nav flex-column">
                 <li class="nav-item"><a class="nav-link" th:href="@{/}">홈</a></li>
                 <li class="nav-item"><a class="nav-link" th:href="@{/board/list}">게시판</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/todo/list}">할 일(Todo)</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/calendar/view}">캘린더(Calendar)</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/contact}">Contact</a></li>
 
                 <th:block th:if="${session.loginUser != null}">
                     <li class="nav-item"><a class="nav-link" th:href="@{/member/profile}">내 정보</a></li>

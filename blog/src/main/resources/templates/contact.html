@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>Contact - RealCowLabs</title>
+    <style>
+        .contact-header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .info-card {
+            transition: transform 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            height: 100%;
+        }
+        .info-card:hover {
+            transform: translateY(-5px);
+        }
+        .icon-box {
+            width: 50px;
+            height: 50px;
+            background-color: #f8f9fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #2575fc;
+        }
+        .section-title {
+            position: relative;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 50px;
+            height: 3px;
+            background-color: #2575fc;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <!-- Hero Section -->
+        <div class="contact-header">
+            <div class="container">
+                <h1 class="display-5 fw-bold mb-2">Contact & Information</h1>
+                <p class="lead">RealCowLabs와 Record Of A Day에 대해 소개합니다.</p>
+            </div>
+        </div>
+
+        <div class="container mb-5">
+            <div class="row g-4">
+                <!-- 1. About Section -->
+                <div class="col-md-6">
+                    <div class="card info-card p-4">
+                        <div class="icon-box">
+                            <i class="bi bi-person-badge"></i>
+                        </div>
+                        <h3 class="section-title">About Me</h3>
+                        <p class="text-muted">
+                            안녕하세요! 일상의 소중함을 기록하고 체계적으로 관리하는 것을 즐기는 개발자입니다. 
+                            복잡한 기능보다는 사용자에게 꼭 필요한 본질적인 가치를 전달하고자 노력합니다.
+                        </p>
+                        <p class="text-muted">
+                            <strong>Record Of A Day</strong>는 이러한 고민 끝에 탄생한 개인 프로젝트로, 
+                            누구나 쉽게 자신의 하루를 기록하고 돌아볼 수 있는 공간을 지향합니다.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 2. Project Description Section -->
+                <div class="col-md-6">
+                    <div class="card info-card p-4">
+                        <div class="icon-box">
+                            <i class="bi bi-info-circle"></i>
+                        </div>
+                        <h3 class="section-title">Description</h3>
+                        <p class="text-muted">
+                            <strong>Record Of A Day</strong>는 단순한 블로그 이상의 기능을 제공합니다.
+                        </p>
+                        <ul class="list-unstyled text-muted small">
+                            <li class="mb-2"><i class="bi bi-check2-circle text-primary me-2"></i><strong>일상 기록:</strong> 하루 한 장의 사진과 글로 채우는 데일리 다이어리</li>
+                            <li class="mb-2"><i class="bi bi-check2-circle text-primary me-2"></i><strong>일정 관리:</strong> 직관적인 To-do 리스트와 캘린더 연동</li>
+                            <li class="bi bi-check2-circle text-primary me-2"></i><strong>커뮤니티:</strong> 생각과 정보를 나누는 깔끔한 게시판 서비스</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 3. Contact Section -->
+                <div class="col-12">
+                    <div class="card info-card p-4">
+                        <div class="icon-box">
+                            <i class="bi bi-envelope-at"></i>
+                        </div>
+                        <h3 class="section-title">Contact Us</h3>
+                        <p class="text-muted mb-4">프로젝트에 대한 피드백이나 협업 제안은 언제든 환영합니다.</p>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center p-3 bg-light rounded shadow-sm">
+                                    <i class="bi bi-envelope-fill text-primary fs-4 me-3"></i>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">Email</h6>
+                                        <span class="small text-muted">bjw8518@gmail.com</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center p-3 bg-light rounded shadow-sm">
+                                    <i class="bi bi-github text-dark fs-4 me-3"></i>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">GitHub</h6>
+                                        <a href="https://github.com/RealCow4317" target="_blank" class="small text-decoration-none">github.com/RealCow4317</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center p-3 bg-light rounded shadow-sm">
+                                    <i class="bi bi-link-45deg text-success fs-4 me-3"></i>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">Blog</h6>
+                                        <a href="https://realblackcow.tistory.com/" target="_blank" class="small text-decoration-none">realblackcow.tistory.com/</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <a th:href="@{/}" class="btn btn-outline-primary px-4 py-2 rounded-pill">
+                    <i class="bi bi-arrow-left me-2"></i>홈으로 돌아가기
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
