@@ -71,3 +71,4 @@ Thumbs.db
 .classpath
 .settings/
 .factorypathblog/src/main/resources/application.properties 
+blog/src/main/resources/application.properties 
