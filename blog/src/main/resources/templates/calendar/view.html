@@ -6,6 +6,22 @@
     <title>캘린더</title>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
     <link th:href="@{/css/calendar.css}" rel="stylesheet">
+    <style>
+        .schedule-event {
+            cursor: pointer;
+            padding: 2px 4px;
+            font-size: 0.85em;
+            border-radius: 4px;
+            margin-bottom: 1px;
+            border: none !important;
+        }
+        .choice-btn {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 15px;
+            font-size: 1.1em;
+        }
+    </style>
 </head>
 <body>
     <div layout:fragment="content">
@@ -13,27 +29,43 @@
             <div id='calendar'></div>
         </div>
 
+        <!-- 초기 선택 모달 -->
+        <div class="modal fade" id="choiceModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-sm modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body text-center p-4">
+                        <h5 class="mb-4">무엇을 기록할까요?</h5>
+                        <button type="button" class="btn btn-outline-primary choice-btn" id="btnGoToDiary">
+                            📖 일기 쓰기
+                        </button>
+                        <button type="button" class="btn btn-outline-success choice-btn" id="btnGoToSchedule">
+                            📅 일정 추가
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 일기 모달 -->
         <div class="modal fade" id="diaryModal" tabindex="-1" aria-labelledby="diaryModalLabel">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <form id="diaryForm" th:action="@{/calendar/diary}" method="post" enctype="multipart/form-data">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="diaryModalLabel">오늘의 일기 작성</h5>
+                            <h5 class="modal-title" id="diaryModalLabel">일기 작성</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <input type="hidden" name="diaryDate" id="modalDiaryDate">
                             <div class="mb-3" id="existingImagePreviewContainer" style="display: none;">
-                                <label class="form-label">기존 이미지:</label>
-                                <img id="existingImagePreview" src="" alt="Existing Image" class="img-fluid mb-2">
-                                <small class="form-text text-muted">새로운 이미지를 업로드하면 기존 이미지가 교체됩니다.</small>
+                                <img id="existingImagePreview" src="" alt="Existing Image" class="img-fluid mb-2 rounded">
                             </div>
                             <div class="mb-3">
-                                <label for="diaryContent" class="form-label">한 줄 일기:</label>
+                                <label for="diaryContent" class="form-label">한 줄 일기</label>
                                 <input type="text" class="form-control" id="diaryContent" name="content">
                             </div>
                             <div class="mb-3">
-                                <label for="diaryImage" class="form-label">사진 업로드:</label>
+                                <label for="diaryImage" class="form-label">사진</label>
                                 <input type="file" class="form-control" id="diaryImage" name="imageFile" accept="image/*">
                             </div>
                         </div>
@@ -47,96 +79,71 @@
             </div>
         </div>
 
+        <!-- 일정 모달 -->
+        <div class="modal fade" id="scheduleModal" tabindex="-1" aria-labelledby="scheduleModalLabel">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form id="scheduleForm">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="scheduleModalLabel">일정 추가</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="id" id="scheduleId">
+                            <div class="mb-3">
+                                <label class="form-label">제목</label>
+                                <input type="text" class="form-control" name="title" id="scheduleTitle" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">내용</label>
+                                <textarea class="form-control" name="content" id="scheduleContent" rows="3"></textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">시작일</label>
+                                    <input type="date" class="form-control" name="startDate" id="scheduleStartDate" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">종료일</label>
+                                    <input type="date" class="form-control" name="endDate" id="scheduleEndDate">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">색상</label>
+                                <input type="color" class="form-control form-control-color" name="color" id="scheduleColor" value="#3788d8">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger" id="btnDeleteSchedule" style="display: none;">삭제</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                            <button type="submit" class="btn btn-primary">저장</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
         <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/ko.js'></script>
 
         <script th:inline="javascript">
             document.addEventListener('DOMContentLoaded', function() {
-                // contextPath 안전하게 처리
                 let rawContextPath = /*[[@{/}]]*/ '';
                 const contextPath = rawContextPath.endsWith('/') ? rawContextPath : rawContextPath + '/';
                 
-                const diaryForm = document.getElementById('diaryForm');
-                const btnDeleteDiary = document.getElementById('btnDeleteDiary');
-                const saveDiaryBtn = document.getElementById('saveDiaryBtn');
-                
-                // 저장 버튼 클릭 시 폼 검증
-                saveDiaryBtn.addEventListener('click', function(e) {
-                    const contentInput = document.getElementById('diaryContent');
-                    const imageInput = document.getElementById('diaryImage');
-                    const existingImage = document.getElementById('existingImagePreview').getAttribute('src');
-                    
-                    const hasContent = contentInput.value.trim().length > 0;
-                    const hasNewImage = imageInput.files.length > 0;
-                    const hasExistingImage = existingImage && existingImage !== '' && !existingImage.endsWith('null');
-                    const hasImage = hasNewImage || hasExistingImage;
-                    
-                    if (!hasContent && !hasImage) {
-                         alert('내용이나 이미지를 입력해주세요.');
-                         return;
-                    }
+                let selectedDate = null;
+                const choiceModal = new bootstrap.Modal(document.getElementById('choiceModal'));
+                const diaryModal = new bootstrap.Modal(document.getElementById('diaryModal'));
+                const scheduleModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
 
-                    let confirmMsg = '';
-                    if (!hasContent && hasImage) {
-                        confirmMsg = '글을 작성하지 않으셨습니다. 그대로 업로드 하시겠습니까?';
-                    } else if (hasContent && !hasImage) {
-                        confirmMsg = '사진을 첨부하지 않았습니다. 그대로 업로드 하시겠습니까?';
-                    }
-
-                    if (!confirmMsg || confirm(confirmMsg)) {
-                        diaryForm.submit();
-                    }
-                });
-
-                // 삭제 버튼 처리
-                btnDeleteDiary.addEventListener('click', function() {
-                    const date = document.getElementById('modalDiaryDate').value;
-                    if (confirm(date + ' 일기를 삭제하시겠습니까?')) {
-                        const formData = new FormData();
-                        formData.append('date', date);
-
-                        fetch(contextPath + 'calendar/delete-diary', {
-                            method: 'POST',
-                            body: formData
-                        })
-                        .then(response => {
-                            if (response.ok) {
-                                if (document.activeElement) document.activeElement.blur();
-                                const modalInstance = bootstrap.Modal.getInstance(document.getElementById('diaryModal'));
-                                if (modalInstance) modalInstance.hide();
-                                
-                                // 배경 이미지 즉시 제거 로직 추가
-                                const dayEl = document.querySelector(`.fc-daygrid-day[data-date="${date}"]`);
-                                if (dayEl) {
-                                    dayEl.style.backgroundImage = '';
-                                    dayEl.classList.remove('diary-with-image');
-                                    const frame = dayEl.querySelector('.fc-daygrid-day-frame');
-                                    if (frame) frame.style.backgroundColor = '';
-                                    const dayTop = dayEl.querySelector('.fc-daygrid-day-top');
-                                    if (dayTop) {
-                                        dayTop.style.backgroundColor = '';
-                                        dayTop.style.borderRadius = '';
-                                    }
-                                }
-                                
-                                calendar.refetchEvents();
-                            } else {
-                                alert('삭제에 실패했습니다.');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('오류가 발생했습니다.');
-                        });
-                    }
-                });
-                
+                // 캘린더 초기화
                 var calendarEl = document.getElementById('calendar');
                 var calendar = new FullCalendar.Calendar(calendarEl, {
                     initialView: 'dayGridMonth',
                     locale: 'ko',
                     height: 'auto',
-                    dayMaxEvents: true,
+                    dayMaxEvents: 4,
+                    eventOrder: "displayOrder", // Todo -> Schedule 순서 고정
                     headerToolbar: {
                         left: 'prev,next today',
                         center: 'title',
@@ -148,43 +155,26 @@
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
 
-                        if (clickedDate.getTime() <= today.getTime()) {
-                            document.getElementById('diaryForm').reset();
-                            document.getElementById('existingImagePreviewContainer').style.display = 'none';
-                            document.getElementById('existingImagePreview').src = '';
-
-                            fetch(contextPath + 'calendar/diary-entry?date=' + info.dateStr)
-                                .then(response => {
-                                    if (response.ok && response.status !== 204) {
-                                        return response.text().then(text => text ? JSON.parse(text) : null);
-                                    }
-                                    return null;
-                                })
-                                .then(data => {
-                                    document.getElementById('modalDiaryDate').value = info.dateStr;
-                                    document.getElementById('diaryModalLabel').innerText = info.dateStr + ' 일기 작성';
-
-                                    if (data) {
-                                        document.getElementById('diaryContent').value = data.content;
-                                        if (data.imagePath) {
-                                            let p = data.imagePath;
-                                            if (p.startsWith('/')) p = p.substring(1);
-                                            document.getElementById('existingImagePreview').src = contextPath + p;
-                                            document.getElementById('existingImagePreviewContainer').style.display = 'block';
-                                        }
-                                        btnDeleteDiary.style.display = 'block';
-                                    } else {
-                                        btnDeleteDiary.style.display = 'none';
-                                    }
-                                    new bootstrap.Modal(document.getElementById('diaryModal')).show();
-                                });
+                        if (clickedDate.getTime() > today.getTime()) {
+                            // 미래 날짜는 일정만 추가 가능
+                            selectedDate = info.dateStr;
+                            openScheduleModal(null, info.dateStr);
                         } else {
-                            alert('미래 날짜에는 일기를 작성할 수 없습니다.');
+                            // 과거/오늘 날짜는 선택 모달 오픈
+                            selectedDate = info.dateStr;
+                            choiceModal.show();
                         }
                     },
                     eventClick: function(info) {
-                        if (info.event.extendedProps.type === 'todo') {
+                        const type = info.event.extendedProps.type;
+                        if (type === 'todo') {
                             window.location.href = contextPath + 'todo/list';
+                        } else if (type === 'schedule') {
+                            openScheduleModal(info.event);
+                        } else {
+                            // 다이어리는 날짜 클릭과 동일하게 처리 (수정용)
+                            selectedDate = info.event.startStr;
+                            openDiaryModal(info.event.startStr);
                         }
                     },
                     eventSources: [
@@ -209,6 +199,8 @@
                     },
                     eventDidMount: function(info) {
                         const props = info.event.extendedProps;
+                        
+                        // 1. 일기 배경 이미지 처리
                         if (props && props.imagePath) {
                             const dayEl = info.el.closest('.fc-daygrid-day');
                             let p = props.imagePath;
@@ -219,27 +211,143 @@
                                 dayEl.style.setProperty('background-image', 'url("' + finalImagePath + '")', 'important');
                                 dayEl.style.backgroundSize = 'cover';
                                 dayEl.style.backgroundPosition = 'center';
-                                dayEl.style.backgroundRepeat = 'no-repeat';
                                 dayEl.classList.add('diary-with-image');
                                 const frame = dayEl.querySelector('.fc-daygrid-day-frame');
                                 if (frame) frame.style.setProperty('background-color', 'transparent', 'important');
-                                const dayTop = dayEl.querySelector('.fc-daygrid-day-top');
-                                if (dayTop) {
-                                    dayTop.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
-                                    dayTop.style.borderRadius = '4px';
-                                }
                             }
+                            // 일기 텍스트 바는 숨김
                             info.el.style.display = 'none';
+                        }
+                        
+                        // 2. 일정(Schedule) 색상 바 강제 적용
+                        if (props && props.type === 'schedule') {
+                            info.el.style.setProperty('background-color', info.event.backgroundColor, 'important');
+                            info.el.style.setProperty('color', '#ffffff', 'important');
+                            info.el.classList.add('schedule-event');
+                            
+                            // 내부 텍스트 요소가 있다면 색상 맞춤
+                            const contentEl = info.el.querySelector('.fc-event-main');
+                            if (contentEl) {
+                                contentEl.style.color = '#ffffff';
+                            }
+                        }
+
+                        // 3. Todo 완료 스타일 처리
+                        if (props && props.type === 'todo') {
+                            info.el.classList.add('todo-event');
+                            if (props.completed) {
+                                info.el.classList.add('completed');
+                            }
                         }
                     }
                 });
                 calendar.render();
 
-                var diaryModalEl = document.getElementById('diaryModal');
-                diaryModalEl.addEventListener('hidden.bs.modal', function () {
-                    calendar.refetchEvents();
+                // 선택 버튼 이벤트
+                document.getElementById('btnGoToDiary').addEventListener('click', () => {
+                    choiceModal.hide();
+                    openDiaryModal(selectedDate);
+                });
+
+                document.getElementById('btnGoToSchedule').addEventListener('click', () => {
+                    choiceModal.hide();
+                    openScheduleModal(null, selectedDate);
+                });
+
+                // 모달 오픈 함수들
+                function openDiaryModal(date) {
                     document.getElementById('diaryForm').reset();
-                    document.body.focus();
+                    document.getElementById('existingImagePreviewContainer').style.display = 'none';
+                    document.getElementById('btnDeleteDiary').style.display = 'none';
+                    
+                    fetch(contextPath + 'calendar/diary-entry?date=' + date)
+                        .then(response => {
+                            if (response.ok && response.status !== 204) {
+                                return response.text().then(text => text ? JSON.parse(text) : null);
+                            }
+                            return null;
+                        })
+                        .then(data => {
+                            document.getElementById('modalDiaryDate').value = date;
+                            document.getElementById('diaryModalLabel').innerText = date + ' 일기 작성';
+                            if (data) {
+                                document.getElementById('diaryContent').value = data.content;
+                                if (data.imagePath) {
+                                    let p = data.imagePath; if (p.startsWith('/')) p = p.substring(1);
+                                    document.getElementById('existingImagePreview').src = contextPath + p;
+                                    document.getElementById('existingImagePreviewContainer').style.display = 'block';
+                                }
+                                document.getElementById('btnDeleteDiary').style.display = 'block';
+                            }
+                            diaryModal.show();
+                        });
+                }
+
+                function openScheduleModal(event, date) {
+                    document.getElementById('scheduleForm').reset();
+                    document.getElementById('btnDeleteSchedule').style.display = 'none';
+                    
+                    if (event) {
+                        // 수정 모드
+                        document.getElementById('scheduleId').value = event.id.replace('schedule_', '');
+                        document.getElementById('scheduleTitle').value = event.title.replace('📅 ', '');
+                        document.getElementById('scheduleContent').value = event.extendedProps.content || '';
+                        document.getElementById('scheduleStartDate').value = event.startStr;
+                        document.getElementById('scheduleEndDate').value = event.endStr || '';
+                        document.getElementById('scheduleColor').value = event.backgroundColor;
+                        document.getElementById('btnDeleteSchedule').style.display = 'block';
+                        document.getElementById('scheduleModalLabel').innerText = '일정 수정';
+                    } else {
+                        // 신규 모드
+                        document.getElementById('scheduleId').value = '';
+                        document.getElementById('scheduleStartDate').value = date;
+                        document.getElementById('scheduleModalLabel').innerText = date + ' 일정 추가';
+                    }
+                    scheduleModal.show();
+                }
+
+                // 일정 저장
+                document.getElementById('scheduleForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const formData = new FormData(this);
+                    fetch(contextPath + 'calendar/schedule', {
+                        method: 'POST',
+                        body: new URLSearchParams(formData)
+                    }).then(() => {
+                        scheduleModal.hide();
+                        calendar.refetchEvents();
+                    });
+                });
+
+                // 일정 삭제
+                document.getElementById('btnDeleteSchedule').addEventListener('click', function() {
+                    if (confirm('일정을 삭제하시겠습니까?')) {
+                        const id = document.getElementById('scheduleId').value;
+                        const formData = new FormData();
+                        formData.append('id', id);
+                        fetch(contextPath + 'calendar/delete-schedule', {
+                            method: 'POST',
+                            body: formData
+                        }).then(() => {
+                            scheduleModal.hide();
+                            calendar.refetchEvents();
+                        });
+                    }
+                });
+
+                // 일기 삭제
+                document.getElementById('btnDeleteDiary').addEventListener('click', function() {
+                    const date = document.getElementById('modalDiaryDate').value;
+                    if (confirm('일기를 삭제하시겠습니까?')) {
+                        const formData = new FormData();
+                        formData.append('date', date);
+                        fetch(contextPath + 'calendar/delete-diary', { method: 'POST', body: formData }).then(() => {
+                            diaryModal.hide();
+                            const dayEl = document.querySelector(`.fc-daygrid-day[data-date="${date}"]`);
+                            if (dayEl) { dayEl.style.backgroundImage = ''; dayEl.classList.remove('diary-with-image'); }
+                            calendar.refetchEvents();
+                        });
+                    }
                 });
             });
         </script>

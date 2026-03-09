@@ -2,9 +2,11 @@ package com.example.blog.controller;
 
 import com.example.blog.dto.DiaryDTO;
 import com.example.blog.dto.MemberDTO;
+import com.example.blog.dto.ScheduleDTO;
 import com.example.blog.dto.TodoDTO;
 import com.example.blog.service.DiaryService;
 import com.example.blog.service.HolidayService;
+import com.example.blog.service.ScheduleService;
 import com.example.blog.service.TodoService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpSession;
 import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +37,11 @@ public class CalendarController {
 
     @Autowired
     private TodoService todoService;
+
+    @Autowired
+    private ScheduleService scheduleService;
+
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     @GetMapping("/view")
     public String calendarView(HttpSession session) {
@@ -55,7 +63,6 @@ public class CalendarController {
 
         log.info("Fetching calendar events from {} to {} for member: {}", start, end, loginUser.getMemberNo());
 
-        // 날짜 파라미터 안전하게 처리 (YYYY-MM-DD 형식만 추출)
         String startDate = (start.length() >= 10) ? start.substring(0, 10) : start;
         String endDate = (end.length() >= 10) ? end.substring(0, 10) : end;
 
@@ -69,6 +76,7 @@ public class CalendarController {
             event.put("title", entry.getContent());
             event.put("start", entry.getDiaryDate().toString());
             event.put("allDay", true);
+            event.put("displayOrder", 1);
             Map<String, Object> extendedProps = new HashMap<>();
             String displayImage = (entry.getThumbnailPath() != null) ? entry.getThumbnailPath() : entry.getImagePath();
             extendedProps.put("imagePath", displayImage);
@@ -81,34 +89,91 @@ public class CalendarController {
         for (TodoDTO todo : todos) {
             Map<String, Object> event = new HashMap<>();
             event.put("id", "todo_" + todo.getId());
-            
-            // 완료 여부에 따라 제목 표시 변경
             String title = (todo.isCompleted() ? "✅ " : "⏳ ") + todo.getContent();
             event.put("title", title);
             event.put("start", todo.getDueDate().toString());
             event.put("allDay", true);
             event.put("className", "todo-event");
+            event.put("displayOrder", 2);
             
             Map<String, Object> extendedProps = new HashMap<>();
             extendedProps.put("type", "todo");
             extendedProps.put("completed", todo.isCompleted());
             event.put("extendedProps", extendedProps);
             
-            // 할 일은 배경색 등으로 구분
             if (todo.isCompleted()) {
                 event.put("backgroundColor", "#e9ecef");
                 event.put("borderColor", "#dee2e6");
                 event.put("textColor", "#adb5bd");
             } else {
-                event.put("backgroundColor", "#fff3cd");
-                event.put("borderColor", "#ffeeba");
-                event.put("textColor", "#856404");
+                event.put("backgroundColor", "#ffffff"); // 배경도 흰색 계열로 변경
+                event.put("borderColor", "#dee2e6");
+                event.put("textColor", "#000000"); // 갈색에서 검정색으로 변경
+            }
+            events.add(event);
+        }
+
+        // 3. 일반 일정(Schedule) 데이터 추가
+        List<ScheduleDTO> schedules = scheduleService.findByMemberNoAndDateRange(loginUser.getMemberNo(), startDate, endDate);
+        for (ScheduleDTO schedule : schedules) {
+            Map<String, Object> event = new HashMap<>();
+            event.put("id", "schedule_" + schedule.getId());
+            event.put("title", "📅 " + schedule.getTitle());
+            
+            if (schedule.getStartDate() != null) {
+                event.put("start", dateFormat.format(schedule.getStartDate()));
             }
             
+            if (schedule.getEndDate() != null) {
+                // FullCalendar의 end 날짜는 해당 날짜를 포함하지 않으므로 +1일을 해줌
+                java.util.Calendar c = java.util.Calendar.getInstance();
+                c.setTime(schedule.getEndDate());
+                c.add(java.util.Calendar.DATE, 1);
+                event.put("end", dateFormat.format(c.getTime()));
+            }
+            
+            event.put("allDay", true);
+            event.put("backgroundColor", schedule.getColor());
+            event.put("borderColor", schedule.getColor());
+            event.put("className", "schedule-event");
+            event.put("displayOrder", 3);
+
+            Map<String, Object> extendedProps = new HashMap<>();
+            extendedProps.put("type", "schedule");
+            extendedProps.put("content", schedule.getContent());
+            event.put("extendedProps", extendedProps);
             events.add(event);
         }
 
         return events;
+    }
+
+    @PostMapping("/schedule")
+    @ResponseBody
+    public ResponseEntity<String> saveSchedule(ScheduleDTO schedule, HttpSession session) {
+        MemberDTO loginUser = (MemberDTO) session.getAttribute("loginUser");
+        if (loginUser == null) return ResponseEntity.status(401).body("Unauthorized");
+
+        schedule.setMemberNo(loginUser.getMemberNo());
+        
+        if (schedule.getId() != null && schedule.getId() > 0) {
+            log.info("Updating existing schedule: {}", schedule.getId());
+            scheduleService.update(schedule);
+        } else {
+            log.info("Saving new schedule");
+            scheduleService.save(schedule);
+        }
+        return ResponseEntity.ok("Success");
+    }
+
+    @PostMapping("/delete-schedule")
+    @ResponseBody
+    public ResponseEntity<String> deleteSchedule(@RequestParam int id, HttpSession session) {
+        MemberDTO loginUser = (MemberDTO) session.getAttribute("loginUser");
+        if (loginUser == null) return ResponseEntity.status(401).body("Unauthorized");
+
+        scheduleService.deleteById(id);
+        return ResponseEntity.ok("Success");
     }
 
     @GetMapping("/diary-entry")
