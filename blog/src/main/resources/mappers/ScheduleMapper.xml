@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.blog.dao.ScheduleDAO">
+
+    <resultMap id="scheduleResultMap" type="com.example.blog.dto.ScheduleDTO">
+        <id property="id" column="id"/>
+        <result property="memberNo" column="member_no"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="color" column="color"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <select id="findByMemberNoAndDateRange" resultMap="scheduleResultMap">
+        SELECT * FROM schedule
+        WHERE member_no = #{memberNo}
+          AND (start_date BETWEEN #{start} AND #{end}
+               OR end_date BETWEEN #{start} AND #{end}
+               OR (start_date &lt;= #{start} AND end_date &gt;= #{end}))
+    </select>
+
+    <insert id="save" parameterType="com.example.blog.dto.ScheduleDTO" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schedule (member_no, title, content, start_date, end_date, color)
+        VALUES (#{memberNo}, #{title}, #{content}, #{startDate}, #{endDate}, #{color})
+    </insert>
+
+    <update id="update" parameterType="com.example.blog.dto.ScheduleDTO">
+        UPDATE schedule
+        SET title = #{title},
+            content = #{content},
+            start_date = #{startDate},
+            end_date = #{endDate},
+            color = #{color}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM schedule WHERE id = #{id}
+    </delete>
+
+    <select id="findById" resultMap="scheduleResultMap">
+        SELECT * FROM schedule WHERE id = #{id}
+    </select>
+
+</mapper>
