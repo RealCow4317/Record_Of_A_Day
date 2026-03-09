@@ -133,6 +133,14 @@ a:hover {
     text-align: right;
 }
 
+/* 게시글 본문 내 이미지 반응형 처리 */
+.board-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 10px 0;
+}
+
 /* Card Styles (Common) */
 .card {
     padding: 20px;
