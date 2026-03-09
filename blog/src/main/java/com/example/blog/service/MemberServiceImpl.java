@@ -17,6 +17,9 @@ public class MemberServiceImpl implements MemberService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private MailService mailService;
+
     @Override
     public void register(MemberDTO member) {
         if (memberDAO.getMemberById(member.getId()) != null) {
@@ -77,5 +80,24 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public MemberDTO getMemberByEmail(String email) {
         return memberDAO.getMemberByEmail(email);
+    }
+
+    @Override
+    public void findPassword(String id, String email) {
+        MemberDTO member = memberDAO.getMemberById(id);
+        
+        if (member == null || !member.getEmail().equals(email)) {
+            throw new RuntimeException("일치하는 회원 정보가 없습니다.");
+        }
+
+        // 임시 비밀번호 생성 (8자리)
+        String temporaryPassword = java.util.UUID.randomUUID().toString().substring(0, 8);
+        
+        // 비밀번호 업데이트 (BCrypt 암호화는 updateMember 내부에서 처리됨)
+        member.setPassword(temporaryPassword);
+        updateMember(member);
+
+        // 메일 발송
+        mailService.sendTemporaryPassword(email, temporaryPassword);
     }
 }

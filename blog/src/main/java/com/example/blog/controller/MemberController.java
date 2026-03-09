@@ -106,6 +106,27 @@ public class MemberController {
         return memberService.getMemberByEmail(email) == null ? "true" : "false";
     }
 
+    // 비밀번호 찾기 폼
+    @GetMapping("/find-password")
+    public String findPasswordForm() {
+        return "member/findPassword";
+    }
+
+    // 비밀번호 찾기 처리
+    @PostMapping("/find-password")
+    public String findPassword(@RequestParam String id,
+                               @RequestParam String email,
+                               RedirectAttributes redirectAttributes) {
+        try {
+            memberService.findPassword(id, email);
+            redirectAttributes.addFlashAttribute("message", "입력하신 이메일로 임시 비밀번호가 발송되었습니다.");
+            return "redirect:/member/login";
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/member/find-password";
+        }
+    }
+
     // 비밀번호 변경 폼
     @GetMapping("/change-password")
     public String changePasswordForm(HttpSession session, Model model) {

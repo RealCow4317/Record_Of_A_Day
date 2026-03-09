@@ -14,4 +14,5 @@ public interface MemberService {
     List<MemberDTO> searchMembers(String keyword);
     MemberDTO getMemberByNo(int memberNo);
     MemberDTO getMemberByEmail(String email);
+    void findPassword(String id, String email);
 }
