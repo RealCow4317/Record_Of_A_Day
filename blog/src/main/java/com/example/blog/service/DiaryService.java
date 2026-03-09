@@ -11,5 +11,7 @@ public interface DiaryService {
 
     List<DiaryDTO> findByMemberNoAndDateRange(int memberNo, String startDate, String endDate);
 
-    DiaryDTO findByMemberNoAndDiaryDate(int memberNo, Date diaryDate); // New method
+    DiaryDTO findByMemberNoAndDiaryDate(int memberNo, Date diaryDate);
+
+    void deleteDiary(int memberNo, Date diaryDate);
 }

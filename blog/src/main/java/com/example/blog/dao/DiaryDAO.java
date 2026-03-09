@@ -14,4 +14,6 @@ public interface DiaryDAO {
     DiaryDTO findByMemberNoAndDiaryDate(@Param("memberNo") int memberNo, @Param("diaryDate") Date diaryDate);
 
     void update(DiaryDTO diary);
+
+    void deleteByMemberNoAndDiaryDate(@Param("memberNo") int memberNo, @Param("diaryDate") Date diaryDate);
 }

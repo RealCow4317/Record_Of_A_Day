@@ -2,6 +2,7 @@ package com.example.blog.service;
 
 import com.example.blog.dao.DiaryDAO;
 import com.example.blog.dto.DiaryDTO;
+import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails; // Import Thumbnailator
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class DiaryServiceImpl implements DiaryService {
 
     @Autowired
@@ -89,6 +91,43 @@ public class DiaryServiceImpl implements DiaryService {
 
     @Override
     public DiaryDTO findByMemberNoAndDiaryDate(int memberNo, Date diaryDate) {
+        log.debug("Finding diary for memberNo: {} on date: {}", memberNo, diaryDate);
         return diaryDAO.findByMemberNoAndDiaryDate(memberNo, diaryDate);
+    }
+
+    @Override
+    public void deleteDiary(int memberNo, Date diaryDate) {
+        log.info("Attempting to delete diary for memberNo: {}, date: {}", memberNo, diaryDate);
+        DiaryDTO diary = diaryDAO.findByMemberNoAndDiaryDate(memberNo, diaryDate);
+        if (diary != null) {
+            // Delete physical files
+            deletePhysicalFile(diary.getImagePath());
+            deletePhysicalFile(diary.getThumbnailPath());
+            
+            // Delete database record
+            diaryDAO.deleteByMemberNoAndDiaryDate(memberNo, diaryDate);
+            log.info("Successfully deleted diary record and files for date: {}", diaryDate);
+        } else {
+            log.warn("No diary entry found to delete for date: {}", diaryDate);
+        }
+    }
+
+    private void deletePhysicalFile(String webPath) {
+        if (webPath != null && webPath.startsWith("/upload/")) {
+            String filename = webPath.substring("/upload/".length());
+            try {
+                Path filePath = Paths.get(uploadDir).resolve(filename).toAbsolutePath().normalize();
+                File file = filePath.toFile();
+                if (file.exists()) {
+                    if (file.delete()) {
+                        log.debug("Deleted physical file: {}", filePath);
+                    } else {
+                        log.warn("Failed to delete physical file: {}", filePath);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error deleting file {}: {}", webPath, e.getMessage());
+            }
+        }
     }
 }

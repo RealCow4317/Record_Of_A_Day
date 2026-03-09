@@ -6,6 +6,7 @@ import com.example.blog.dto.TodoDTO;
 import com.example.blog.service.DiaryService;
 import com.example.blog.service.HolidayService;
 import com.example.blog.service.TodoService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/calendar")
+@Slf4j
 public class CalendarController {
 
     @Autowired
@@ -37,6 +39,7 @@ public class CalendarController {
     public String calendarView(HttpSession session) {
         MemberDTO loginUser = (MemberDTO) session.getAttribute("loginUser");
         if (loginUser == null) {
+            log.warn("Unauthorized access attempt to calendar view");
             return "redirect:/member/login";
         }
         return "calendar/view";
@@ -50,9 +53,11 @@ public class CalendarController {
             return new ArrayList<>();
         }
 
-        // ISO 문자열에서 날짜 부분(YYYY-MM-DD)만 추출
-        String startDate = start.substring(0, 10);
-        String endDate = end.substring(0, 10);
+        log.info("Fetching calendar events from {} to {} for member: {}", start, end, loginUser.getMemberNo());
+
+        // 날짜 파라미터 안전하게 처리 (YYYY-MM-DD 형식만 추출)
+        String startDate = (start.length() >= 10) ? start.substring(0, 10) : start;
+        String endDate = (end.length() >= 10) ? end.substring(0, 10) : end;
 
         List<Map<String, Object>> events = new ArrayList<>();
 
@@ -135,11 +140,34 @@ public class CalendarController {
             diary.setContent(content);
 
             diaryService.saveDiary(diary, imageFile);
+            log.info("Diary saved for user: {}, date: {}", loginUser.getMemberNo(), diary.getDiaryDate());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to save diary", e);
         }
 
         return "redirect:/calendar/view";
+    }
+
+    @PostMapping("/delete-diary")
+    @ResponseBody
+    public ResponseEntity<String> deleteDiary(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.util.Date utilDate,
+                                              HttpSession session) {
+        MemberDTO loginUser = (MemberDTO) session.getAttribute("loginUser");
+        if (loginUser == null) {
+            log.warn("Unauthorized diary delete attempt");
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+
+        java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
+        log.info("Request to delete diary for date: {} by member: {}", sqlDate, loginUser.getMemberNo());
+
+        try {
+            diaryService.deleteDiary(loginUser.getMemberNo(), sqlDate);
+            return ResponseEntity.ok("Success");
+        } catch (Exception e) {
+            log.error("Failed to delete diary for date: {}", sqlDate, e);
+            return ResponseEntity.status(500).body("Error");
+        }
     }
 
     @GetMapping("/holidays")

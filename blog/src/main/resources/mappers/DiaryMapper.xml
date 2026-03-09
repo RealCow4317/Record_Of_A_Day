@@ -40,4 +40,9 @@
         WHERE id = #{id}
     </update>
 
+    <delete id="deleteByMemberNoAndDiaryDate">
+        DELETE FROM diary
+        WHERE member_no = #{memberNo} AND diary_date = #{diaryDate}
+    </delete>
+
 </mapper>

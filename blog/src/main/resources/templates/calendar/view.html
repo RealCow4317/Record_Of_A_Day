@@ -38,8 +38,9 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                            <button type="button" id="saveDiaryBtn" class="btn btn-primary">저장</button>
+                            <button type="button" class="btn btn-danger" id="btnDeleteDiary" style="display: none;">삭제</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                            <button type="submit" id="saveDiaryBtn" class="btn btn-primary">저장</button>
                         </div>
                     </form>
                 </div>
@@ -51,36 +52,82 @@
 
         <script th:inline="javascript">
             document.addEventListener('DOMContentLoaded', function() {
-                const contextPath = '';
-                const memberNo = 0;
-
-                const saveBtn = document.getElementById('saveDiaryBtn');
-                const diaryForm = document.getElementById('diaryForm');
+                // contextPath 안전하게 처리
+                let rawContextPath = /*[[@{/}]]*/ '';
+                const contextPath = rawContextPath.endsWith('/') ? rawContextPath : rawContextPath + '/';
                 
-                saveBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
+                const diaryForm = document.getElementById('diaryForm');
+                const btnDeleteDiary = document.getElementById('btnDeleteDiary');
+                const saveDiaryBtn = document.getElementById('saveDiaryBtn');
+                
+                // 저장 버튼 클릭 시 폼 검증
+                saveDiaryBtn.addEventListener('click', function(e) {
                     const contentInput = document.getElementById('diaryContent');
                     const imageInput = document.getElementById('diaryImage');
                     const existingImage = document.getElementById('existingImagePreview').getAttribute('src');
                     
                     const hasContent = contentInput.value.trim().length > 0;
                     const hasNewImage = imageInput.files.length > 0;
-                    const hasExistingImage = existingImage && existingImage !== '';
+                    const hasExistingImage = existingImage && existingImage !== '' && !existingImage.endsWith('null');
                     const hasImage = hasNewImage || hasExistingImage;
                     
-                    if (!hasContent && hasImage) {
-                        if (confirm('글을 작성하지 않으셨습니다 그대로 업로드 하시겠습니까?')) {
-                            diaryForm.submit();
-                        }
-                    } else if (hasContent && !hasImage) {
-                        if (confirm('사진을 첨부하지 않았습니다. 그대로 업로드 하시겠습니까?')) {
-                            diaryForm.submit();
-                        }
-                    } else if (!hasContent && !hasImage) {
+                    if (!hasContent && !hasImage) {
                          alert('내용이나 이미지를 입력해주세요.');
-                    } else {
+                         return;
+                    }
+
+                    let confirmMsg = '';
+                    if (!hasContent && hasImage) {
+                        confirmMsg = '글을 작성하지 않으셨습니다. 그대로 업로드 하시겠습니까?';
+                    } else if (hasContent && !hasImage) {
+                        confirmMsg = '사진을 첨부하지 않았습니다. 그대로 업로드 하시겠습니까?';
+                    }
+
+                    if (!confirmMsg || confirm(confirmMsg)) {
                         diaryForm.submit();
+                    }
+                });
+
+                // 삭제 버튼 처리
+                btnDeleteDiary.addEventListener('click', function() {
+                    const date = document.getElementById('modalDiaryDate').value;
+                    if (confirm(date + ' 일기를 삭제하시겠습니까?')) {
+                        const formData = new FormData();
+                        formData.append('date', date);
+
+                        fetch(contextPath + 'calendar/delete-diary', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                if (document.activeElement) document.activeElement.blur();
+                                const modalInstance = bootstrap.Modal.getInstance(document.getElementById('diaryModal'));
+                                if (modalInstance) modalInstance.hide();
+                                
+                                // 배경 이미지 즉시 제거 로직 추가
+                                const dayEl = document.querySelector(`.fc-daygrid-day[data-date="${date}"]`);
+                                if (dayEl) {
+                                    dayEl.style.backgroundImage = '';
+                                    dayEl.classList.remove('diary-with-image');
+                                    const frame = dayEl.querySelector('.fc-daygrid-day-frame');
+                                    if (frame) frame.style.backgroundColor = '';
+                                    const dayTop = dayEl.querySelector('.fc-daygrid-day-top');
+                                    if (dayTop) {
+                                        dayTop.style.backgroundColor = '';
+                                        dayTop.style.borderRadius = '';
+                                    }
+                                }
+                                
+                                calendar.refetchEvents();
+                            } else {
+                                alert('삭제에 실패했습니다.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('오류가 발생했습니다.');
+                        });
                     }
                 });
                 
@@ -98,7 +145,6 @@
                     dateClick: function(info) {
                         const clickedDate = new Date(info.dateStr);
                         clickedDate.setHours(0, 0, 0, 0);
-
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
 
@@ -107,61 +153,45 @@
                             document.getElementById('existingImagePreviewContainer').style.display = 'none';
                             document.getElementById('existingImagePreview').src = '';
 
-                            fetch(contextPath + '/calendar/diary-entry?date=' + info.dateStr)
+                            fetch(contextPath + 'calendar/diary-entry?date=' + info.dateStr)
                                 .then(response => {
-                                    if (!response.ok) {
-                                        if (response.status === 404) return null;
-                                        throw new Error('Network response was not ok.');
+                                    if (response.ok && response.status !== 204) {
+                                        return response.text().then(text => text ? JSON.parse(text) : null);
                                     }
-                                    return response.json();
+                                    return null;
                                 })
                                 .then(data => {
-                                    var modal = new bootstrap.Modal(document.getElementById('diaryModal'));
                                     document.getElementById('modalDiaryDate').value = info.dateStr;
                                     document.getElementById('diaryModalLabel').innerText = info.dateStr + ' 일기 작성';
 
                                     if (data) {
                                         document.getElementById('diaryContent').value = data.content;
                                         if (data.imagePath) {
-                                            document.getElementById('existingImagePreview').src = contextPath + data.imagePath;
+                                            let p = data.imagePath;
+                                            if (p.startsWith('/')) p = p.substring(1);
+                                            document.getElementById('existingImagePreview').src = contextPath + p;
                                             document.getElementById('existingImagePreviewContainer').style.display = 'block';
                                         }
+                                        btnDeleteDiary.style.display = 'block';
+                                    } else {
+                                        btnDeleteDiary.style.display = 'none';
                                     }
-                                    modal.show();
-                                })
-                                .catch(error => {
-                                    console.error('Error fetching diary entry:', error);
-                                    alert('일기 정보를 불러오는데 실패했습니다. 새로운 일기를 작성해주세요.');
-                                    var modal = new bootstrap.Modal(document.getElementById('diaryModal'));
-                                    document.getElementById('modalDiaryDate').value = info.dateStr;
-                                    document.getElementById('diaryModalLabel').innerText = info.dateStr + ' 일기 작성';
-                                    modal.show();
+                                    new bootstrap.Modal(document.getElementById('diaryModal')).show();
                                 });
                         } else {
                             alert('미래 날짜에는 일기를 작성할 수 없습니다.');
                         }
                     },
                     eventClick: function(info) {
-                        // TODO 이벤트인 경우 할 일 목록 페이지로 이동
                         if (info.event.extendedProps.type === 'todo') {
-                            window.location.href = contextPath + '/todo/list';
+                            window.location.href = contextPath + 'todo/list';
                         }
-                        // 공휴일이나 다이어리 텍스트 클릭 시에는 특별한 동작 없음 (필요시 추가)
                     },
                     eventSources: [
+                        { url: contextPath + 'calendar/events', method: 'GET' },
                         {
-                            url: contextPath + '/calendar/events',
+                            url: contextPath + 'calendar/holidays',
                             method: 'GET',
-                            failure: function() {
-                                alert('일기 데이터를 불러오지 못했습니다!');
-                            }
-                        },
-                        {
-                            url: contextPath + '/calendar/holidays',
-                            method: 'GET',
-                            failure: function() {
-                                console.error('휴일 데이터를 불러오지 못했습니다.');
-                            },
                             display: 'block',
                             backgroundColor: 'transparent',
                             borderColor: 'transparent',
@@ -179,59 +209,37 @@
                     },
                     eventDidMount: function(info) {
                         const props = info.event.extendedProps;
-                        
-                        // 다이어리 이벤트(이미지 경로가 있는 경우) 처리
                         if (props && props.imagePath) {
-                            console.log('Diary Image Found:', props.imagePath); // 디버깅용
                             const dayEl = info.el.closest('.fc-daygrid-day');
-                            const imagePath = contextPath + props.imagePath;
+                            let p = props.imagePath;
+                            if (p.startsWith('/')) p = p.substring(1);
+                            const finalImagePath = contextPath + p;
 
                             if (dayEl) {
-                                // URL에 따옴표 추가 (경로에 특수문자나 공백이 있을 경우 대비)
-                                dayEl.style.backgroundImage = 'url("' + imagePath + '")';
+                                dayEl.style.setProperty('background-image', 'url("' + finalImagePath + '")', 'important');
                                 dayEl.style.backgroundSize = 'cover';
                                 dayEl.style.backgroundPosition = 'center';
                                 dayEl.style.backgroundRepeat = 'no-repeat';
                                 dayEl.classList.add('diary-with-image');
-                                
-                                // 내부 프레임 배경 제거 (이미지 노출을 위해)
                                 const frame = dayEl.querySelector('.fc-daygrid-day-frame');
-                                if (frame) {
-                                    frame.style.backgroundColor = 'transparent';
-                                }
-                                
-                                // 날짜 숫자 배경을 반투명하게 하여 가독성 높임
+                                if (frame) frame.style.setProperty('background-color', 'transparent', 'important');
                                 const dayTop = dayEl.querySelector('.fc-daygrid-day-top');
                                 if (dayTop) {
-                                    dayTop.style.backgroundColor = 'rgba(255, 255, 255, 0.6)';
+                                    dayTop.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+                                    dayTop.style.borderRadius = '4px';
                                 }
                             }
-                            
-                            // 다이어리 이벤트 자체(텍스트)는 숨김
-                            if (info.el) {
-                                info.el.style.display = 'none';
-                            }
-                        }
-                        
-                        // 오늘 날짜 표시 유지
-                        const today = new Date();
-                        today.setHours(0, 0, 0, 0);
-                        const eventDate = info.event.start;
-                        if (eventDate) {
-                            eventDate.setHours(0, 0, 0, 0);
-                            if (eventDate.getTime() === today.getTime()) {
-                                const dayCell = info.el.closest('.fc-daygrid-day');
-                                if (dayCell) dayCell.classList.add('fc-day-today');
-                            }
+                            info.el.style.display = 'none';
                         }
                     }
                 });
                 calendar.render();
 
                 var diaryModalEl = document.getElementById('diaryModal');
-                diaryModalEl.addEventListener('hidden.bs.modal', function (event) {
+                diaryModalEl.addEventListener('hidden.bs.modal', function () {
                     calendar.refetchEvents();
                     document.getElementById('diaryForm').reset();
+                    document.body.focus();
                 });
             });
         </script>
