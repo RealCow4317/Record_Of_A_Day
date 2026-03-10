@@ -135,10 +135,23 @@ a:hover {
 
 /* 게시글 본문 내 이미지 반응형 처리 */
 .board-content img {
-    max-width: 100%;
-    height: auto;
+    max-width: 100% !important;
+    height: auto !important;
     display: block;
-    margin: 10px 0;
+    margin: 10px auto; /* 중앙 정렬 추가 */
+}
+
+.board-content {
+    word-break: break-word; /* 긴 단어 줄바꿈 */
+    overflow-wrap: break-word;
+    line-height: 1.6;
+    overflow-x: auto; /* 내용이 넓을 경우 내부 스크롤 생성 (레이아웃 보호) */
+    max-width: 100%;
+}
+
+.board-content * {
+    max-width: 100% !important; /* 본문 내 모든 요소(표, 이미지 등)가 컨테이너를 넘지 못하게 강제 */
+    box-sizing: border-box;
 }
 
 /* Card Styles (Common) */
