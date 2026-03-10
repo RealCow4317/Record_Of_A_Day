@@ -142,6 +142,8 @@
                     initialView: 'dayGridMonth',
                     locale: 'ko',
                     height: 'auto',
+                    expandRows: true, // 모든 행이 높이를 동일하게 나눠가짐
+                    aspectRatio: 1.0,  // 가로세로 비율 조절 (1.35 -> 1.0으로 낮춰서 세로로 더 길게)
                     dayMaxEvents: 4,
                     eventOrder: "displayOrder", // Todo -> Schedule 순서 고정
                     headerToolbar: {
